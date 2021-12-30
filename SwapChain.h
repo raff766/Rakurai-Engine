@@ -3,11 +3,13 @@
 #include "GraphicsDevice.h"
 
 #include <vulkan/vulkan.h>
+#include <memory>
 #include <vector>
 
 class SwapChain {
     public:
     SwapChain(GraphicsDevice& graphicsDevice, VkExtent2D windowExtent);
+    SwapChain(GraphicsDevice& graphicsDevice, VkExtent2D windowExtent, std::unique_ptr<SwapChain> previous);
     ~SwapChain();
 
     VkExtent2D getExtent() { return swapChainExtent; };
@@ -15,8 +17,8 @@ class SwapChain {
     size_t getImageCount() { return swapChainImages.size(); };
     VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
 
-    uint32_t acquireNextImage();
-    void submitDrawCommands(const VkCommandBuffer* buffer);
+    VkResult acquireNextImage(uint32_t& imageIndex);
+    VkResult submitDrawCommands(const VkCommandBuffer* buffer);
     VkResult presentImage(uint32_t imageIndex);
 
     private:
@@ -27,6 +29,7 @@ class SwapChain {
     GraphicsDevice& graphicsDevice;
     VkExtent2D windowExtent;
     VkSwapchainKHR swapChain;
+    std::unique_ptr<SwapChain> oldSwapChain;
     VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
     VkRenderPass renderPass;
@@ -41,6 +44,7 @@ class SwapChain {
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+    void init();
     void createSwapChain();
     void createImageViews();
     void createRenderPass();

@@ -136,7 +136,11 @@ VkDebugUtilsMessengerCreateInfoEXT GraphicsDevice::getDebugMessengerCreateInfo()
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData) -> VKAPI_ATTR VkBool32 VKAPI_CALL {
 
-        std::cerr << "Validation Layer: " << pCallbackData->pMessage << '\n';
+        //Ignore error that is thrown as a false positive when resizing the application's window
+        std::string ignoreError = "VUID-VkSwapchainCreateInfoKHR-imageExtent-01274";
+        if (ignoreError != pCallbackData->pMessageIdName) {
+            std::cerr << pCallbackData->pMessage << '\n';
+        }
 
         return VK_FALSE;
     };
@@ -301,7 +305,7 @@ void GraphicsDevice::createCommandPool() {
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-    poolInfo.flags = 0; // Optional
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
 
     if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create command pool!");

@@ -13,14 +13,20 @@ public:
     void operator=(const Window&) = delete;
 
     bool shouldClose() { return glfwWindowShouldClose(glfwWindow); };
+    bool wasFramebufferResized() { return framebufferResized; };
+    void resetFramebufferResizedFlag() { framebufferResized = false; };
+    int getWidth() { return width; };
+    int getHeight() { return height; };
     
     void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 
 private:
+    static void windowResizedCallback(GLFWwindow* glfwWindow, int width, int height);
     void initWindow();
 
-    const int width;
-    const int height;
+    int width;
+    int height;
+    bool framebufferResized = false;
 
     std::string windowName;
     GLFWwindow* glfwWindow;

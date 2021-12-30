@@ -6,6 +6,16 @@
 
 SwapChain::SwapChain(GraphicsDevice& graphicsDevice, VkExtent2D windowExtent) 
     :  graphicsDevice(graphicsDevice), windowExtent(windowExtent) {
+    init();
+}
+
+SwapChain::SwapChain(GraphicsDevice& graphicsDevice, VkExtent2D windowExtent, std::unique_ptr<SwapChain> previous) 
+    :  graphicsDevice(graphicsDevice), windowExtent(windowExtent), oldSwapChain(std::move(previous)) {
+    init();
+    oldSwapChain = nullptr; //Clean up old swap chain
+}
+
+void SwapChain::init() {
     createSwapChain();
     createImageViews();
     createRenderPass();
@@ -96,7 +106,7 @@ void SwapChain::createSwapChain() {
     swapChainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     swapChainInfo.presentMode = presentMode;
     swapChainInfo.clipped = VK_TRUE;
-    swapChainInfo.oldSwapchain = VK_NULL_HANDLE;
+    swapChainInfo.oldSwapchain = oldSwapChain == nullptr ? VK_NULL_HANDLE : oldSwapChain->swapChain;
 
     if (vkCreateSwapchainKHR(graphicsDevice.getDevice(), &swapChainInfo, nullptr, &swapChain) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create swap chain!");
@@ -219,10 +229,9 @@ void SwapChain::createSyncObjects() {
     }
 }
 
-uint32_t SwapChain::acquireNextImage() {
+VkResult SwapChain::acquireNextImage(uint32_t& imageIndex) {
     vkWaitForFences(graphicsDevice.getDevice(), 1, &inFlightFrameFences[currentFrame], VK_TRUE, UINT64_MAX);
 
-    uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(
         graphicsDevice.getDevice(),
         swapChain,
@@ -231,19 +240,15 @@ uint32_t SwapChain::acquireNextImage() {
         VK_NULL_HANDLE,
         &imageIndex);
 
-    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        throw std::runtime_error("Failed to acquire swapchain image");
-    }
-
     if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
         vkWaitForFences(graphicsDevice.getDevice(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
     }
     imagesInFlight[imageIndex] = inFlightFrameFences[currentFrame];
 
-    return imageIndex;
+    return result;
 }
 
-void SwapChain::submitDrawCommands(const VkCommandBuffer* buffer) {
+VkResult SwapChain::submitDrawCommands(const VkCommandBuffer* buffer) {
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -260,9 +265,7 @@ void SwapChain::submitDrawCommands(const VkCommandBuffer* buffer) {
     submitInfo.pSignalSemaphores = signalSemaphores;
 
     vkResetFences(graphicsDevice.getDevice(), 1, &inFlightFrameFences[currentFrame]);
-    if (vkQueueSubmit(graphicsDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFrameFences[currentFrame]) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to submit draw command buffer!");
-    }
+    return vkQueueSubmit(graphicsDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFrameFences[currentFrame]);
 }
 
 VkResult SwapChain::presentImage(uint32_t imageIndex) {
