@@ -8,18 +8,23 @@
 
 class SwapChain {
     public:
-    SwapChain(GraphicsDevice& graphicsDevice, VkExtent2D windowExtent);
-    SwapChain(GraphicsDevice& graphicsDevice, VkExtent2D windowExtent, std::unique_ptr<SwapChain> previous);
-    ~SwapChain();
+    static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-    VkExtent2D getExtent() { return swapChainExtent; };
-    VkRenderPass getRenderPass() { return renderPass; };
-    size_t getImageCount() { return swapChainImages.size(); };
-    VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
+    SwapChain(GraphicsDevice& graphicsDevice, VkExtent2D windowExtent);
+    SwapChain(GraphicsDevice& graphicsDevice, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previous);
+    ~SwapChain();
 
     VkResult acquireNextImage(uint32_t& imageIndex);
     VkResult submitDrawCommands(const VkCommandBuffer* buffer);
     VkResult presentImage(uint32_t imageIndex);
+
+    bool compareSwapChainFormats(const SwapChain& swapChain) const {
+        return swapChain.swapChainImageFormat == swapChainImageFormat /*&& swapChain.swapChainDepthFormat == swapChainDepthFormat*/;
+    }
+    VkExtent2D getExtent() { return swapChainExtent; }
+    VkRenderPass getRenderPass() { return renderPass; }
+    size_t getImageCount() { return swapChainImages.size(); }
+    VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
 
     private:
     std::vector<VkImage> swapChainImages;
@@ -29,8 +34,9 @@ class SwapChain {
     GraphicsDevice& graphicsDevice;
     VkExtent2D windowExtent;
     VkSwapchainKHR swapChain;
-    std::unique_ptr<SwapChain> oldSwapChain;
+    std::shared_ptr<SwapChain> oldSwapChain;
     VkFormat swapChainImageFormat;
+    VkFormat swapChainDepthFormat;
     VkExtent2D swapChainExtent;
     VkRenderPass renderPass;
 

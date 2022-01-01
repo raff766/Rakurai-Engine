@@ -9,8 +9,8 @@ SwapChain::SwapChain(GraphicsDevice& graphicsDevice, VkExtent2D windowExtent)
     init();
 }
 
-SwapChain::SwapChain(GraphicsDevice& graphicsDevice, VkExtent2D windowExtent, std::unique_ptr<SwapChain> previous) 
-    :  graphicsDevice(graphicsDevice), windowExtent(windowExtent), oldSwapChain(std::move(previous)) {
+SwapChain::SwapChain(GraphicsDevice& graphicsDevice, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previous) 
+    :  graphicsDevice(graphicsDevice), windowExtent(windowExtent), oldSwapChain(previous) {
     init();
     oldSwapChain = nullptr; //Clean up old swap chain
 }
@@ -32,7 +32,7 @@ SwapChain::~SwapChain() {
     for (const auto& frameBuffer : swapChainFramebuffers) {
         vkDestroyFramebuffer(graphicsDevice.getDevice(), frameBuffer, nullptr);
     }
-    for (int i = 0; i < swapChainImageViews.size(); i++) {
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(graphicsDevice.getDevice(), imageAvailableSemaphores[i], nullptr);
         vkDestroySemaphore(graphicsDevice.getDevice(), renderFinishedSemaphores[i], nullptr);
         vkDestroyFence(graphicsDevice.getDevice(), inFlightFrameFences[i], nullptr);
@@ -208,9 +208,9 @@ void SwapChain::createFramebuffers() {
 }
 
 void SwapChain::createSyncObjects() {
-    imageAvailableSemaphores.resize(swapChainImageViews.size());
-    renderFinishedSemaphores.resize(swapChainImageViews.size());
-    inFlightFrameFences.resize(swapChainImageViews.size());
+    imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    inFlightFrameFences.resize(MAX_FRAMES_IN_FLIGHT);
     imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
@@ -220,7 +220,7 @@ void SwapChain::createSyncObjects() {
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (int i = 0; i < swapChainImageViews.size(); i++) {
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         if (vkCreateSemaphore(graphicsDevice.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
             vkCreateSemaphore(graphicsDevice.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
             vkCreateFence(graphicsDevice.getDevice(), &fenceInfo, nullptr, &inFlightFrameFences[i])) {
@@ -282,6 +282,6 @@ VkResult SwapChain::presentImage(uint32_t imageIndex) {
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr;
 
-    currentFrame = (currentFrame + 1) % swapChainImageViews.size();
+    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     return vkQueuePresentKHR(graphicsDevice.getPresentQueue(), &presentInfo);
 }

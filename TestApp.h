@@ -2,9 +2,9 @@
 
 #include "Window.h"
 #include "GraphicsDevice.h"
-#include "GraphicsPipeline.h"
 #include "SwapChain.h"
-#include "Model.h"
+#include "GameObject.h"
+#include "Renderer.h"
 
 #include <memory>
 #include <vector>
@@ -23,20 +23,11 @@ public:
     void run();
     
 private:
-    void loadModels();
-    void createPipelineLayout();
-    void createPipeline();
-    void createCommandBuffers();
-    void freeCommandBuffers();
-    void drawFrame();
-    void recreateSwapChain();
-    void recordCommandBuffer(int imageIndex);
+    void loadGameObjects();
 
     Window window{WIDTH, HEIGHT, "Test App"};
     GraphicsDevice graphicsDevice{window};
-    std::unique_ptr<SwapChain> swapChain;
-    std::unique_ptr<GraphicsPipeline> graphicsPipeline;
-    VkPipelineLayout pipelineLayout;
-    std::vector<VkCommandBuffer> commandBuffers;
-    std::unique_ptr<Model> model;
+    Renderer renderer{window, graphicsDevice};
+    
+    std::vector<GameObject> gameObjects;
 };

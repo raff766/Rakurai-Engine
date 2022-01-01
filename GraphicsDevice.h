@@ -12,6 +12,7 @@ struct SwapChainSupportDetails {
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> presentModes;
 };
+
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> presentFamily;
@@ -20,6 +21,7 @@ struct QueueFamilyIndices {
         return graphicsFamily.has_value() && presentFamily.has_value();
     }
 };
+
 class GraphicsDevice {
     public:
     GraphicsDevice(Window& window);
@@ -35,13 +37,13 @@ class GraphicsDevice {
         VkBuffer& buffer,
         VkDeviceMemory& memory);
 
-    VkDevice getDevice() { return device; };
-    VkSurfaceKHR getSurface() { return surface; };
-    QueueFamilyIndices getQueueFamilyIndices() { return findQueueFamilyIndices(physicalDevice); };
-    SwapChainSupportDetails getSwapChainSupportDetails() { return getSwapChainSupportDetails(physicalDevice); };
-    VkCommandPool getCommandPool() { return commandPool; };
-    VkQueue getGraphicsQueue() { return graphicsQueue; };
-    VkQueue getPresentQueue() { return presentQueue; };
+    VkDevice getDevice() { return device; }
+    VkSurfaceKHR getSurface() { return surface; }
+    QueueFamilyIndices getQueueFamilyIndices() { return findQueueFamilyIndices(physicalDevice); }
+    SwapChainSupportDetails getSwapChainSupportDetails() { return getSwapChainSupportDetails(physicalDevice); }
+    VkCommandPool getCommandPool() { return commandPool; }
+    VkQueue getGraphicsQueue() { return graphicsQueue; }
+    VkQueue getPresentQueue() { return presentQueue; }
 
     private:
     const std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
