@@ -9,7 +9,7 @@
 
 struct SwapChainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkSurfaceFormatKHR> surfaceFormats;
     std::vector<VkPresentModeKHR> presentModes;
 };
 
@@ -36,6 +36,12 @@ class GraphicsDevice {
         VkMemoryPropertyFlags properties,
         VkBuffer& buffer,
         VkDeviceMemory& memory);
+    void createImage(
+        const VkImageCreateInfo &imageInfo,
+        VkMemoryPropertyFlags properties,
+        VkImage &image,
+        VkDeviceMemory &imageMemory);
+    VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
     VkDevice getDevice() { return device; }
     VkSurfaceKHR getSurface() { return surface; }

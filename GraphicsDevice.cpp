@@ -188,7 +188,7 @@ int GraphicsDevice::rateDeviceSuitability(VkPhysicalDevice device) {
     if (!hasRequiredDeviceExtensions(device)) return 0;
 
     SwapChainSupportDetails swapChainSupport = getSwapChainSupportDetails(device);
-    if (swapChainSupport.formats.empty() || swapChainSupport.presentModes.empty()) return 0;
+    if (swapChainSupport.surfaceFormats.empty() || swapChainSupport.presentModes.empty()) return 0;
 
     if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
         score += 1000;
@@ -288,8 +288,8 @@ SwapChainSupportDetails GraphicsDevice::getSwapChainSupportDetails(VkPhysicalDev
 
     uint32_t formatCount;
     vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
-    supportDetails.formats.resize(formatCount);
-    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, supportDetails.formats.data());
+    supportDetails.surfaceFormats.resize(formatCount);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, supportDetails.surfaceFormats.data());
 
     uint32_t presentModeCount;
     vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
@@ -297,6 +297,19 @@ SwapChainSupportDetails GraphicsDevice::getSwapChainSupportDetails(VkPhysicalDev
     vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, supportDetails.presentModes.data());
 
     return supportDetails;
+}
+
+VkFormat GraphicsDevice::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
+    for (VkFormat format : candidates) {
+        VkFormatProperties props;
+        vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
+        if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+            return format;
+        } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+            return format;
+        }
+    }
+    throw std::runtime_error("Failed to find supported format!");
 }
 
 void GraphicsDevice::createCommandPool() {
@@ -354,4 +367,29 @@ uint32_t GraphicsDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFla
         }
     }
     throw std::runtime_error("Failed to find suitable memory type!");
+}
+
+void GraphicsDevice::createImage(
+        const VkImageCreateInfo &imageInfo,
+        VkMemoryPropertyFlags properties,
+        VkImage &image,
+        VkDeviceMemory &imageMemory) {
+    if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create image!");
+    }
+
+    VkMemoryRequirements memRequirements;
+    vkGetImageMemoryRequirements(device, image, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+    if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to allocate image memory!");
+    }
+    if (vkBindImageMemory(device, image, imageMemory, 0) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to bind image memory!");
+    }
 }

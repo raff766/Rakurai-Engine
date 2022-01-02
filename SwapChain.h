@@ -33,12 +33,18 @@ class SwapChain {
     
     GraphicsDevice& graphicsDevice;
     VkExtent2D windowExtent;
+
     VkSwapchainKHR swapChain;
     std::shared_ptr<SwapChain> oldSwapChain;
     VkFormat swapChainImageFormat;
     VkFormat swapChainDepthFormat;
     VkExtent2D swapChainExtent;
+
     VkRenderPass renderPass;
+
+    std::vector<VkImage> depthImages;
+    std::vector<VkDeviceMemory> depthImageMemories;
+    std::vector<VkImageView> depthImageViews;
 
     //Synchronization objects
     std::vector<VkSemaphore> imageAvailableSemaphores;
@@ -47,12 +53,16 @@ class SwapChain {
     std::vector<VkFence> imagesInFlight;
     int currentFrame = 0;
 
+    bool hasStencilComponent(VkFormat format) { return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT; }
+    
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+    VkFormat findDepthFormat();
     void init();
     void createSwapChain();
     void createImageViews();
+    void createDepthResources();
     void createRenderPass();
     void createFramebuffers();
     void createSyncObjects();
