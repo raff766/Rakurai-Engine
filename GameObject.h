@@ -35,9 +35,9 @@ struct TransformComponent {
                 0.0f,
             },
             {
-                scale.y * (c2 * s1),
-                scale.y * (-s2),
-                scale.y * (c1 * c2),
+                scale.z * (c2 * s1),
+                scale.z * (-s2),
+                scale.z * (c1 * c2),
                 0.0f,
             },
             {

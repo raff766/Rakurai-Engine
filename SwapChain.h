@@ -19,9 +19,10 @@ class SwapChain {
     VkResult presentImage(uint32_t imageIndex);
 
     bool compareSwapChainFormats(const SwapChain& swapChain) const {
-        return swapChain.swapChainImageFormat == swapChainImageFormat /*&& swapChain.swapChainDepthFormat == swapChainDepthFormat*/;
+        return swapChain.swapChainImageFormat == swapChainImageFormat && swapChain.swapChainDepthFormat == swapChainDepthFormat;
     }
     VkExtent2D getExtent() { return swapChainExtent; }
+    float getAspectRatio() { return static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height); }
     VkRenderPass getRenderPass() { return renderPass; }
     size_t getImageCount() { return swapChainImages.size(); }
     VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }

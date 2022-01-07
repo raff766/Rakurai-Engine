@@ -158,7 +158,7 @@ void SwapChain::createImageViews() {
 }
 
 void SwapChain::createDepthResources() {
-    VkFormat depthFormat = findDepthFormat();
+    swapChainDepthFormat = findDepthFormat();
 
     depthImages.resize(getImageCount());
     depthImageMemories.resize(getImageCount());
@@ -173,7 +173,7 @@ void SwapChain::createDepthResources() {
         depthImageInfo.extent.depth = 1;
         depthImageInfo.mipLevels = 1;
         depthImageInfo.arrayLayers = 1;
-        depthImageInfo.format = depthFormat;
+        depthImageInfo.format = swapChainDepthFormat;
         depthImageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         depthImageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         depthImageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -186,7 +186,7 @@ void SwapChain::createDepthResources() {
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         viewInfo.image = depthImages[i];
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        viewInfo.format = depthFormat;
+        viewInfo.format = swapChainDepthFormat;
         viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
         viewInfo.subresourceRange.baseMipLevel = 0;
         viewInfo.subresourceRange.levelCount = 1;
@@ -201,7 +201,7 @@ void SwapChain::createDepthResources() {
 
 void SwapChain::createRenderPass() {
     VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = findDepthFormat();
+    depthAttachment.format = swapChainDepthFormat;
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;

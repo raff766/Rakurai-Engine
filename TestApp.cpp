@@ -1,5 +1,6 @@
 #include "TestApp.h"
 #include "SimpleRenderSystem.h"
+#include "Camera.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -16,13 +17,20 @@ TestApp::~TestApp() {}
 
 void TestApp::run() {
     SimpleRenderSystem simpleRenderSystem{graphicsDevice, renderer.getSwapChainRenderPass()};
+    Camera camera{};
+    //camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.5f, 0.0f, 1.0f));
+    //camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
+    camera.setViewYXZ({1, 0, 0}, {0, glm::radians(-25.0f), 0});
 
     while(!window.shouldClose()) {
         glfwPollEvents();
+        float aspect = renderer.getAspectRatio();
+        //camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 10);
+        camera.setPerspectiveProjection(50.0f, aspect, 0.1f, 10.0f);
         
         if (auto commandBuffer = renderer.beginFrame()) {
             renderer.beginSwapChainRenderPass(commandBuffer);
-            simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects);
+            simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects, camera);
             renderer.endSwapChainRenderPass(commandBuffer);
             renderer.endFrame();
         }
@@ -95,7 +103,7 @@ void TestApp::loadGameObjects() {
 
     GameObject cube = GameObject::createGameObject();
     cube.model = model;
-    cube.transform.translation = {0.0f, 0.0f, 0.5f};
+    cube.transform.translation = {0.0f, 0.0f, 2.5f};
     cube.transform.scale = {0.5f, 0.5f, 0.5f};
     gameObjects.push_back(std::move(cube));
 }
