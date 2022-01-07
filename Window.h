@@ -12,11 +12,12 @@ public:
     Window(const Window&) = delete;
     void operator=(const Window&) = delete;
 
-    bool shouldClose() { return glfwWindowShouldClose(glfwWindow); }
-    bool wasFramebufferResized() { return framebufferResized; }
+    bool shouldClose() const { return glfwWindowShouldClose(glfwWindow); }
+    bool wasFramebufferResized() const { return framebufferResized; }
     void resetFramebufferResizedFlag() { framebufferResized = false; }
-    int getWidth() { return width; }
-    int getHeight() { return height; }
+    GLFWwindow* getGLFWWindow() const { return glfwWindow; }
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
     
     void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 
