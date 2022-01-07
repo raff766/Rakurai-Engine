@@ -36,6 +36,7 @@ class GraphicsDevice {
         VkMemoryPropertyFlags properties,
         VkBuffer& buffer,
         VkDeviceMemory& memory);
+    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void createImage(
         const VkImageCreateInfo &imageInfo,
         VkMemoryPropertyFlags properties,
@@ -88,4 +89,7 @@ class GraphicsDevice {
     void createCommandPool();
 
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+    VkCommandBuffer beginSingleTimeCommand();
+    void endSingleTimeCommand(VkCommandBuffer commandBuffer);
 };
