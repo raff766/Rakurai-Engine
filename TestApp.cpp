@@ -46,7 +46,7 @@ void TestApp::run() {
 }
 
 void TestApp::loadGameObjects() {
-    std::shared_ptr<Model> model = Model::createModelFromFile(graphicsDevice, "models/colored_cube.obj");
+    std::shared_ptr<Model> model = Model::createModelFromFile(graphicsDevice, "models/smooth_vase.obj");
 
     GameObject gameObj = GameObject::createGameObject();
     gameObj.model = model;
