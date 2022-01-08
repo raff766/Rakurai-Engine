@@ -1,7 +1,26 @@
 #include "Model.h"
+#include "Utils.h"
+
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "libs/tiny_obj_loader.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 
 #include <cassert>
 #include <cstring>
+#include <iostream>
+#include <unordered_map>
+
+namespace std {
+    template <>
+    struct hash<Model::Vertex> {
+        size_t operator()(const Model::Vertex& vertex) const {
+            size_t seed = 0;
+            hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+            return seed;
+        }
+    };
+}
 
 Model::Model(GraphicsDevice &device, const Data& data) : graphicsDevice(device) {
     createVertexBuffers(data.vertices);
@@ -16,6 +35,12 @@ Model::~Model() {
         vkDestroyBuffer(graphicsDevice.getDevice(), indexBuffer, nullptr);
         vkFreeMemory(graphicsDevice.getDevice(), indexBufferMemory, nullptr);
     }
+}
+
+std::unique_ptr<Model> Model::createModelFromFile(GraphicsDevice& device, const std::string& filepath) {
+    Data data{};
+    data.loadModel(filepath);
+    return std::make_unique<Model>(device, data);
 }
 
 void Model::createVertexBuffers(const std::vector<Vertex>& vertices) {
@@ -119,4 +144,58 @@ std::vector<VkVertexInputAttributeDescription> Model::Vertex::getAttributeDescri
     attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescriptions[1].offset = offsetof(Vertex, color);
     return attributeDescriptions;
+}
+
+void Model::Data::loadModel(const std::string& filepath) {
+    tinyobj::ObjReader reader;
+    if (!reader.ParseFromFile(filepath)) {
+        if (!reader.Error().empty()) {
+            throw std::runtime_error(reader.Error());
+        }
+    }
+    if (!reader.Warning().empty()) {
+        std::cout << reader.Warning() << '\n';
+    }
+
+    auto& attrib = reader.GetAttrib();
+    auto& faces = reader.GetShapes();
+    //auto& materials = reader.GetMaterials();
+
+    vertices.clear();
+    indices.clear();
+    std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+    for (const auto& face : faces) {
+        for (const auto& vertexIndices : face.mesh.indices) {
+            Vertex vertex{};
+            vertex.position = {
+                attrib.vertices[3 * vertexIndices.vertex_index + 0],
+                attrib.vertices[3 * vertexIndices.vertex_index + 1],
+                attrib.vertices[3 * vertexIndices.vertex_index + 2],
+            };
+            vertex.color = {
+                attrib.colors[3 * vertexIndices.vertex_index + 0],
+                attrib.colors[3 * vertexIndices.vertex_index + 1],
+                attrib.colors[3 * vertexIndices.vertex_index + 2],
+            };
+            if (vertexIndices.normal_index >= 0) {
+                vertex.normal = {
+                    attrib.normals[3 * vertexIndices.normal_index + 0],
+                    attrib.normals[3 * vertexIndices.normal_index + 1],
+                    attrib.normals[3 * vertexIndices.normal_index + 2],
+                };
+            }
+            if (vertexIndices.texcoord_index >= 0) {
+                vertex.uv = {
+                    attrib.texcoords[2 * vertexIndices.texcoord_index + 0],
+                    attrib.texcoords[2 * vertexIndices.texcoord_index + 1],
+                };
+            }
+
+            if (uniqueVertices.count(vertex) == 0) {
+                vertices.push_back(vertex);
+                uniqueVertices[vertex] = vertices.size() - 1;
+            }
+            indices.push_back(uniqueVertices[vertex]);
+        }
+    }
 }
