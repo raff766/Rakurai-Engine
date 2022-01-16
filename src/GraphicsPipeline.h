@@ -6,17 +6,17 @@
 #include <utility>
 
 struct PipelineConfigInfo {
-    VkPipelineViewportStateCreateInfo viewportInfo;
-    VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
-    VkPipelineRasterizationStateCreateInfo rasterizationInfo;
-    VkPipelineMultisampleStateCreateInfo multisampleInfo;
-    VkPipelineColorBlendAttachmentState colorBlendAttachment;
-    VkPipelineColorBlendStateCreateInfo colorBlendInfo;
-    VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
-    std::vector<VkDynamicState> dynamicStateEnables;
-    VkPipelineDynamicStateCreateInfo dynamicStateInfo;
-    VkPipelineLayout pipelineLayout = nullptr;
-    VkRenderPass renderPass = nullptr;
+    vk::PipelineViewportStateCreateInfo viewportInfo;
+    vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
+    vk::PipelineRasterizationStateCreateInfo rasterizationInfo;
+    vk::PipelineMultisampleStateCreateInfo multisampleInfo;
+    vk::PipelineColorBlendAttachmentState colorBlendAttachment;
+    vk::PipelineColorBlendStateCreateInfo colorBlendInfo;
+    vk::PipelineDepthStencilStateCreateInfo depthStencilInfo;
+    std::vector<vk::DynamicState> dynamicStateEnables;
+    vk::PipelineDynamicStateCreateInfo dynamicStateInfo;
+    vk::PipelineLayout pipelineLayout = nullptr;
+    vk::RenderPass renderPass = nullptr;
     uint32_t subpass = 0;
 
     PipelineConfigInfo() = default;
@@ -30,12 +30,10 @@ public:
         const std::string& vertFilepath, 
         const std::string& fragFilepath, 
         const PipelineConfigInfo& configInfo);
-    ~GraphicsPipeline();
-
     GraphicsPipeline(const GraphicsPipeline&) = delete;
     void operator=(const GraphicsPipeline&) = delete;
 
-    void bind(VkCommandBuffer commandBuffer);
+    void bind(vk::CommandBuffer commandBuffer);
     
     static PipelineConfigInfo getDefaultPipelineConfigInfo();
 
@@ -47,10 +45,10 @@ private:
         const std::string& fragFilepath,
         const PipelineConfigInfo& configInfo);
 
-    void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
+    vk::UniqueShaderModule createShaderModule(const std::vector<char>& code);
 
     GraphicsDevice& graphicsDevice;
-    VkPipeline graphicsPipeline;
-    VkShaderModule vertShaderModule;
-    VkShaderModule fragShaderModule;
+    vk::UniquePipeline graphicsPipeline;
+    vk::UniqueShaderModule vertShaderModule;
+    vk::UniqueShaderModule fragShaderModule;
 };

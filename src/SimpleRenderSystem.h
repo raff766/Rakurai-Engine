@@ -10,19 +10,18 @@
 
 class SimpleRenderSystem {
 public:
-    SimpleRenderSystem(GraphicsDevice& device, VkRenderPass renderPass);
-    ~SimpleRenderSystem();
+    SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass);
     SimpleRenderSystem(const SimpleRenderSystem&) = delete;
     void operator=(const SimpleRenderSystem&) = delete;
 
-    void renderGameObjects(VkCommandBuffer commandBuffer, std::vector<GameObject>& gameObjects, const Camera& camera);
+    void renderGameObjects(vk::CommandBuffer commandBuffer, std::vector<GameObject>& gameObjects, const Camera& camera);
 
 private:
     void createPipelineLayout();
-    void createPipeline(VkRenderPass renderPass);
+    void createPipeline(vk::RenderPass renderPass);
 
     GraphicsDevice& graphicsDevice;
     
     std::unique_ptr<GraphicsPipeline> graphicsPipeline;
-    VkPipelineLayout pipelineLayout;
+    vk::UniquePipelineLayout pipelineLayout;
 };

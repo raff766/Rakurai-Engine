@@ -11,21 +11,20 @@
 class Renderer {
 public:
     Renderer(Window& window, GraphicsDevice& device);
-    ~Renderer();
     Renderer(const Renderer&) = delete;
     void operator=(const Renderer&) = delete;
 
-    VkCommandBuffer beginFrame();
+    vk::CommandBuffer beginFrame();
     void endFrame();
-    void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
-    void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
+    void beginSwapChainRenderPass(vk::CommandBuffer commandBuffer);
+    void endSwapChainRenderPass(vk::CommandBuffer commandBuffer);
 
-    VkRenderPass getSwapChainRenderPass() const { return swapChain->getRenderPass(); }
+    vk::RenderPass getSwapChainRenderPass() const { return swapChain->getRenderPass(); }
     float getAspectRatio() const { return swapChain->getAspectRatio(); }
     bool isFrameInProgress() const { return isFrameStarted; }
-    VkCommandBuffer getCurrentCommandBuffer() const {
+    vk::CommandBuffer getCurrentCommandBuffer() const {
         assert(isFrameStarted && "Cannot get command buffer when frame is not in progress!");
-        return commandBuffers[currentFrameIndex];
+        return *commandBuffers[currentFrameIndex];
     }
     int getFrameIndex() const {
         assert(isFrameStarted && "Cannot get frame index when frame not in progress!");
@@ -40,7 +39,7 @@ private:
     Window& window;
     GraphicsDevice& graphicsDevice;
     std::unique_ptr<SwapChain> swapChain;
-    std::vector<VkCommandBuffer> commandBuffers;
+    std::vector<vk::UniqueCommandBuffer> commandBuffers;
     uint32_t currentImageIndex = 0;
     int currentFrameIndex = 0;
     bool isFrameStarted = false;

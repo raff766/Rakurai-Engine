@@ -15,8 +15,6 @@ TestApp::TestApp() {
     loadGameObjects();
 }
 
-TestApp::~TestApp() {}
-
 void TestApp::run() {
     SimpleRenderSystem simpleRenderSystem{graphicsDevice, renderer.getSwapChainRenderPass()};
     Camera camera{};
@@ -32,7 +30,7 @@ void TestApp::run() {
 
         cameraController.moveInPlaneXZ(window.getGLFWWindow(), frameTime, cameraObject);
         camera.setViewYXZ(cameraObject.transform.translation, cameraObject.transform.rotation);
-        camera.setPerspectiveProjection(50.0f, renderer.getAspectRatio(), 0.1f, 10.0f);
+        camera.setPerspectiveProjection(50.0f, renderer.getAspectRatio(), 0.1f, 1000.0f);
         
         if (auto commandBuffer = renderer.beginFrame()) {
             renderer.beginSwapChainRenderPass(commandBuffer);
@@ -46,7 +44,7 @@ void TestApp::run() {
 }
 
 void TestApp::loadGameObjects() {
-    std::shared_ptr<Model> model = Model::createModelFromFile(graphicsDevice, "models/smooth_vase.obj");
+    std::shared_ptr<Model> model = std::make_shared<Model>(graphicsDevice, "models/smooth_vase.obj");
 
     GameObject gameObj = GameObject::createGameObject();
     gameObj.model = model;

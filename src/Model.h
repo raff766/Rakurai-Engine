@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphicsDevice.h"
+#include "GraphicsBuffer.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -8,6 +9,7 @@
 
 #include <vector>
 #include <memory>
+#include <optional>
 
 class Model {
     public:
@@ -17,8 +19,8 @@ class Model {
         glm::vec3 normal{};
         glm::vec2 uv{};
 
-        static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
-        static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
+        static std::vector<vk::VertexInputBindingDescription> getBindingDescriptions();
+        static std::vector<vk::VertexInputAttributeDescription> getAttributeDescriptions();
 
         bool operator==(const Vertex& other) const {
             return position == other.position && color == other.color && normal == other.normal && uv == other.uv;
@@ -32,25 +34,19 @@ class Model {
     };
 
     Model(GraphicsDevice& device, const Data& data);
-    ~Model();
-    Model(const Model&) = delete;
-    void operator=(const Model&) = delete;
+    Model(GraphicsDevice& device, const std::string& filepath);
 
-    static std::unique_ptr<Model> createModelFromFile(GraphicsDevice& device, const std::string& filepath);
-
-    void bind(VkCommandBuffer commandBuffer);
-    void draw(VkCommandBuffer commandBuffer);
+    void bind(vk::CommandBuffer commandBuffer);
+    void draw(vk::CommandBuffer commandBuffer);
 
     private:
-    GraphicsDevice &graphicsDevice;
+    GraphicsDevice& graphicsDevice;
 
-    VkBuffer vertexBuffer;
-    VkDeviceMemory vertexBufferMemory;
+    std::optional<GraphicsBuffer> vertexBuffer;
     uint32_t vertexCount;
 
     bool hasIndexBuffer = false;
-    VkBuffer indexBuffer;
-    VkDeviceMemory indexBufferMemory;
+    std::optional<GraphicsBuffer> indexBuffer;
     uint32_t indexCount;
 
     void createVertexBuffers(const std::vector<Vertex>& vertices);

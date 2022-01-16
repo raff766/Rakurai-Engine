@@ -15,7 +15,6 @@ public:
     static constexpr int HEIGHT = 600;
 
     TestApp();
-    ~TestApp();
 
     TestApp(const TestApp&) = delete;
     void operator=(const TestApp&) = delete;
