@@ -38,6 +38,11 @@ glm::mat4 TransformComponent::modelMatrix() {
     };
 }
 
+// We need to transform the normals of a model seperate from how we would transform
+// it per vertex with the modelMatrix. This is due to the normals not being transformed
+// correctly with the regular modelMatrix. Therefore we use a special matrix that is the
+// equivalent of the inverse transpose of the modelMatrix needed for the correct normal transformation.
+// https://paroj.github.io/gltut/Illumination/Tut09%20Normal%20Transformation.html
 glm::mat3 TransformComponent::normalMatrix() {
     const float c3 = glm::cos(rotation.z);
     const float s3 = glm::sin(rotation.z);
