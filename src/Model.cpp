@@ -49,12 +49,12 @@ void Model::createVertexBuffers(const std::vector<Vertex>& vertices) {
 
     stagingBuffer.mapData(vertices.data());
 
-    vertexBuffer.emplace(GraphicsBuffer(
+    vertexBuffer.emplace(
         graphicsDevice,
         bufferSize,
         vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
         vk::MemoryPropertyFlagBits::eDeviceLocal
-    ));
+    );
 
     vertexBuffer->copyFrom(stagingBuffer);
 }
@@ -74,12 +74,12 @@ void Model::createIndexBuffer(const std::vector<uint32_t>& indices) {
 
     stagingBuffer.mapData(indices.data());
 
-    indexBuffer.emplace(GraphicsBuffer(
+    indexBuffer.emplace(
         graphicsDevice,
         bufferSize,
         vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
         vk::MemoryPropertyFlagBits::eDeviceLocal
-    ));
+    );
 
     indexBuffer->copyFrom(stagingBuffer);
 }

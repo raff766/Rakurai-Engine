@@ -76,7 +76,6 @@ void GraphicsPipeline::createGraphicsPipeline(
     std::array<vk::PipelineShaderStageCreateInfo, 2> shaderStages{
         vk::PipelineShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eVertex, *vertShaderModule, "main"},
         vk::PipelineShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eFragment, *fragShaderModule, "main"}
-        
     };
 
     auto bindingDescriptions = Model::Vertex::getBindingDescriptions();

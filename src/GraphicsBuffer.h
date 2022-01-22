@@ -5,6 +5,10 @@
 class GraphicsBuffer {
     public:
     GraphicsBuffer(GraphicsDevice& device, vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties);
+    GraphicsBuffer(const GraphicsBuffer&) = delete;
+    void operator=(const GraphicsBuffer&) = delete;
+    GraphicsBuffer(GraphicsBuffer&&) = default;
+    GraphicsBuffer& operator=(GraphicsBuffer&&) = delete;
 
     void copyFrom(const GraphicsBuffer& srcBuffer);
     void mapData(const void* data);

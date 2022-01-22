@@ -2,24 +2,46 @@
 #include "SimpleRenderSystem.h"
 #include "Camera.h"
 #include "MovementController.h"
+#include "GraphicsBuffer.h"
+#include "SwapChain.h"
+
+#include <glm/fwd.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+#include <chrono>
+#include <memory>
+#include <stdexcept>
+#include <vector>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
 
-#include <chrono>
-#include <stdexcept>
+struct GlobalUbo {
+    glm::mat4 projMat{1.0f};
+    glm::mat4 viewMat{1.0f};
+    glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
+};
 
 TestApp::TestApp() {
     loadGameObjects();
 }
 
 void TestApp::run() {
-    SimpleRenderSystem simpleRenderSystem{graphicsDevice, renderer.getSwapChainRenderPass()};
     Camera camera{};
     GameObject cameraObject = GameObject::createGameObject();
     MovementController cameraController{};
+
+    std::vector<GraphicsBuffer> globalUboBuffers;
+    for (int i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+        globalUboBuffers.emplace_back(
+            graphicsDevice,
+            sizeof(GlobalUbo),
+            vk::BufferUsageFlagBits::eUniformBuffer,
+            vk::MemoryPropertyFlagBits::eHostVisible
+        );
+    }
+    SimpleRenderSystem simpleRenderSystem{graphicsDevice, renderer.getSwapChainRenderPass(), globalUboBuffers};
+
     auto currentTime = std::chrono::high_resolution_clock::now();
     while(!window.shouldClose()) {
         glfwPollEvents();
@@ -33,7 +55,13 @@ void TestApp::run() {
         camera.setPerspectiveProjection(50.0f, renderer.getAspectRatio(), 0.1f, 1000.0f);
         
         if (auto commandBuffer = renderer.beginFrame()) {
+            GlobalUbo globalUbo{};
+            globalUbo.projMat = camera.getProjection();
+            globalUbo.viewMat = camera.getView();
+            globalUboBuffers[renderer.getCurrentFrameIndex()].mapData(&globalUbo);
+
             renderer.beginSwapChainRenderPass(commandBuffer);
+            simpleRenderSystem.bindGlobalUbo(commandBuffer, renderer.getCurrentFrameIndex());
             simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects, camera);
             renderer.endSwapChainRenderPass(commandBuffer);
             renderer.endFrame();

@@ -1,20 +1,39 @@
 #include "SimpleRenderSystem.h"
+#include <vulkan/vulkan_enums.hpp>
+#include <vulkan/vulkan_handles.hpp>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+#include <stdexcept>
+#include <optional>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
-
-#include <stdexcept>
 
 struct SimplePushConstantData {
-    glm::mat4 transform{1.0f};
-    glm::mat4 normalMatrix{1.0f};
+    glm::mat4 modelMat{1.0f};
+    glm::mat4 normalMat{1.0f};
 };
 
-SimpleRenderSystem::SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass) : graphicsDevice(device) {
+SimpleRenderSystem::SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::vector<GraphicsBuffer>& globalUboBuffers)
+    : graphicsDevice(device), globalUboBuffers(globalUboBuffers) {
+    createGlobalUboDescriptors();
     createPipelineLayout();
     createPipeline(renderPass);
+}
+
+void SimpleRenderSystem::createGlobalUboDescriptors() {
+    descriptors.emplace(
+        graphicsDevice,
+        vk::DescriptorType::eUniformBuffer,
+        vk::ShaderStageFlagBits::eVertex,
+        globalUboBuffers.size(),
+        1,
+        0
+    );
+    for (int i = 0; i < globalUboBuffers.size(); i++) {
+        descriptors->populateDescriptorSet(i, globalUboBuffers[i]);
+    }
 }
 
 void SimpleRenderSystem::createPipelineLayout() {
@@ -23,20 +42,24 @@ void SimpleRenderSystem::createPipelineLayout() {
         0,
         sizeof(SimplePushConstantData)
     };
-
-    pipelineLayout = graphicsDevice.getDevice().createPipelineLayoutUnique({{}, {}, pushConstantRange});
+    vk::DescriptorSetLayout setLayout = descriptors->getSetLayout();
+    pipelineLayout = graphicsDevice.getDevice().createPipelineLayoutUnique({{}, setLayout, pushConstantRange});
 }
 
 void SimpleRenderSystem::createPipeline(vk::RenderPass renderPass) {
     PipelineConfigInfo pipelineConfig = GraphicsPipeline::getDefaultPipelineConfigInfo();
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = *pipelineLayout;
-    graphicsPipeline = std::make_unique<GraphicsPipeline>(
+    graphicsPipeline.emplace(
         graphicsDevice,
         "shaders/SimpleShader.vert.spv",
         "shaders/SimpleShader.frag.spv",
         pipelineConfig
     );
+}
+
+void SimpleRenderSystem::bindGlobalUbo(vk::CommandBuffer commandBuffer, int frameIndex) {
+    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, *pipelineLayout, 0, descriptors->getDescriptorSets()[frameIndex], {});
 }
 
 void SimpleRenderSystem::renderGameObjects(vk::CommandBuffer commandBuffer, std::vector<GameObject>& gameObjects, const Camera& camera) {
@@ -46,8 +69,8 @@ void SimpleRenderSystem::renderGameObjects(vk::CommandBuffer commandBuffer, std:
 
     for (auto& obj : gameObjects) {
         SimplePushConstantData push{};
-        push.transform = projectionView * obj.transform.modelMatrix();
-        push.normalMatrix = obj.transform.normalMatrix();
+        push.modelMat = obj.transform.modelMatrix();
+        push.normalMat = obj.transform.normalMatrix();
         
         commandBuffer.pushConstants(
             *pipelineLayout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,

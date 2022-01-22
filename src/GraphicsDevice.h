@@ -5,7 +5,6 @@
 #define VULKAN_HPP_NO_NODISCARD_WARNINGS
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>
-
 #include <vector>
 #include <optional>
 #include <utility>
@@ -44,7 +43,7 @@ class GraphicsDevice {
 
     private:
     const std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-    const std::vector<const char*> requiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    const std::vector<const char*> requiredDeviceExtensions = {"VK_KHR_swapchain", "VK_KHR_shader_non_semantic_info"};
     const bool validationLayersEnabled = true;
     
     Window& window;

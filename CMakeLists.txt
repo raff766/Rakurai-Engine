@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_BUILD_TYPE Debug)
 
 set(OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/out)
 set(EXECUTABLE_OUTPUT_PATH ${OUTPUT_DIR})
@@ -25,7 +26,7 @@ foreach(file ${SHADER_FILES})
     cmake_path(GET file FILENAME fileName)
     set(outputFile ${SHADERS_OUTPUT_DIR}/${fileName}.spv)
 
-    add_custom_command(OUTPUT ${outputFile} COMMAND glslc ${file} -o ${outputFile})
+    add_custom_command(OUTPUT ${outputFile} COMMAND glslangValidator --target-env vulkan1.2 -o ${outputFile} ${file} DEPENDS ${file})
     add_custom_target(${fileName}.spv ALL DEPENDS ${outputFile})
 endforeach()
 

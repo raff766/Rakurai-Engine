@@ -8,7 +8,6 @@ class Window {
 public:
     Window(int width, int height, std::string name);
     ~Window();
-
     Window(const Window&) = delete;
     void operator=(const Window&) = delete;
 

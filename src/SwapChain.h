@@ -11,6 +11,8 @@ class SwapChain {
 
     SwapChain(GraphicsDevice& graphicsDevice, vk::Extent2D windowExtent);
     SwapChain(GraphicsDevice& graphicsDevice, vk::Extent2D windowExtent, std::shared_ptr<SwapChain> previous);
+    SwapChain(const SwapChain&) = delete;
+    void operator=(const SwapChain&) = delete;
 
     vk::ResultValue<uint32_t> acquireNextImage();
     void submitDrawCommands(const vk::CommandBuffer& buffer);

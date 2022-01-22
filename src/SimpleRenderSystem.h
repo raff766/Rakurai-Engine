@@ -4,24 +4,30 @@
 #include "GraphicsDevice.h"
 #include "GraphicsPipeline.h"
 #include "GameObject.h"
+#include "Descriptors.h"
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 class SimpleRenderSystem {
 public:
-    SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass);
+    SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::vector<GraphicsBuffer>& globalUboBuffers);
     SimpleRenderSystem(const SimpleRenderSystem&) = delete;
     void operator=(const SimpleRenderSystem&) = delete;
 
+    void bindGlobalUbo(vk::CommandBuffer commandBuffer, int frameIndex);
     void renderGameObjects(vk::CommandBuffer commandBuffer, std::vector<GameObject>& gameObjects, const Camera& camera);
 
 private:
+    void createGlobalUboDescriptors();
     void createPipelineLayout();
     void createPipeline(vk::RenderPass renderPass);
 
     GraphicsDevice& graphicsDevice;
+    std::vector<GraphicsBuffer>& globalUboBuffers;
     
-    std::unique_ptr<GraphicsPipeline> graphicsPipeline;
+    std::optional<Descriptors> descriptors;
     vk::UniquePipelineLayout pipelineLayout;
+    std::optional<GraphicsPipeline> graphicsPipeline;
 };

@@ -35,6 +35,8 @@ class Model {
 
     Model(GraphicsDevice& device, const Data& data);
     Model(GraphicsDevice& device, const std::string& filepath);
+    Model(const Model&) = delete;
+    void operator=(const Model&) = delete;
 
     void bind(vk::CommandBuffer commandBuffer);
     void draw(vk::CommandBuffer commandBuffer);

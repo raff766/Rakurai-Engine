@@ -26,7 +26,7 @@ public:
         assert(isFrameStarted && "Cannot get command buffer when frame is not in progress!");
         return *commandBuffers[currentFrameIndex];
     }
-    int getFrameIndex() const {
+    int getCurrentFrameIndex() const {
         assert(isFrameStarted && "Cannot get frame index when frame not in progress!");
         return currentFrameIndex;
     }

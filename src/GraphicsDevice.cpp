@@ -31,7 +31,7 @@ void GraphicsDevice::createInstance() {
     }
 
     vk::ApplicationInfo appInfo{
-        "Test App", VK_MAKE_VERSION(1, 0, 0), "No Engine", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_0
+        "Test App", VK_MAKE_API_VERSION(0, 1, 0, 0), "No Engine", VK_MAKE_API_VERSION(0, 1, 0, 0), VK_API_VERSION_1_2
     };
     std::vector<const char*> extensions = getRequiredExtensions();
 
