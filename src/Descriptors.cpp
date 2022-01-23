@@ -4,6 +4,7 @@
 #include <vulkan/vulkan_handles.hpp>
 #include <vulkan/vulkan_structs.hpp>
 
+namespace rkrai {
 Descriptors::Descriptors(
         GraphicsDevice& device,
         vk::DescriptorType descriptorType,
@@ -38,4 +39,5 @@ void Descriptors::createDescriptorSetLayout() {
 void Descriptors::allocateDescriptorSets() {
     std::vector<vk::DescriptorSetLayout> layouts(setCount, *descriptorSetLayout);
     descriptorSets = graphicsDevice.getDevice().allocateDescriptorSets({*descriptorPool, layouts});
+}
 }

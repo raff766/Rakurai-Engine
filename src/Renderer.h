@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+namespace rkrai {
 class Renderer {
 public:
     Renderer(Window& window, GraphicsDevice& device);
@@ -44,3 +45,4 @@ private:
     int currentFrameIndex = 0;
     bool isFrameStarted = false;
 };
+}

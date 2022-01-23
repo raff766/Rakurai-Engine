@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+namespace rkrai {
 Renderer::Renderer(Window& window, GraphicsDevice& device) : window(window), graphicsDevice(device) {
     recreateSwapChain();
     createCommandBuffers();
@@ -106,4 +107,5 @@ void Renderer::endFrame() {
 
     isFrameStarted = false;
     currentFrameIndex = (currentFrameIndex + 1) % SwapChain::MAX_FRAMES_IN_FLIGHT;
+}
 }

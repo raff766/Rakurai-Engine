@@ -14,15 +14,16 @@
 
 namespace std {
     template <>
-    struct hash<Model::Vertex> {
-        size_t operator()(const Model::Vertex& vertex) const {
+    struct hash<rkrai::Model::Vertex> {
+        size_t operator()(const rkrai::Model::Vertex& vertex) const {
             size_t seed = 0;
-            hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+            rkrai::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
             return seed;
         }
     };
 }
 
+namespace rkrai {
 Model::Model(GraphicsDevice& device, const Data& data) : graphicsDevice(device) {
     createVertexBuffers(data.vertices);
     createIndexBuffer(data.indices);
@@ -164,4 +165,5 @@ void Model::Data::loadModel(const std::string& filepath) {
             indices.push_back(uniqueVertices[vertex]);
         }
     }
+}
 }

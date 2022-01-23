@@ -1,5 +1,6 @@
 #include "MovementController.h"
 
+namespace rkrai {
 void MovementController::moveInPlaneXZ(GLFWwindow* window, float dt, GameObject& gameObject) {
     glm::vec3 rotate{0.0f};
     if (glfwGetKey(window, keys.lookRight) == GLFW_PRESS) rotate.y += 1.0f;
@@ -31,4 +32,5 @@ void MovementController::moveInPlaneXZ(GLFWwindow* window, float dt, GameObject&
     if (moveDir.x != 0.0f || moveDir.y != 0.0f || moveDir.z != 0.0f) {
         gameObject.transform.translation += moveSpeed * dt * glm::normalize(moveDir);
     }
+}
 }

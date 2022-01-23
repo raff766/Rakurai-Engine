@@ -9,6 +9,7 @@
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_handles.hpp>
 
+namespace rkrai {
 class Descriptors {
     public:
     Descriptors(
@@ -42,3 +43,4 @@ class Descriptors {
     void createDescriptorSetLayout();
     void allocateDescriptorSets();
 };
+}

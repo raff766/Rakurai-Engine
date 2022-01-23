@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
+namespace rkrai {
 class Window {
 public:
     Window(int width, int height, std::string name);
@@ -31,3 +32,4 @@ private:
     std::string windowName;
     GLFWwindow* glfwWindow;
 };
+}

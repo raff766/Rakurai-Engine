@@ -10,6 +10,7 @@
 #include <optional>
 #include <vector>
 
+namespace rkrai {
 class SimpleRenderSystem {
 public:
     SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::vector<GraphicsBuffer>& globalUboBuffers);
@@ -31,3 +32,4 @@ private:
     vk::UniquePipelineLayout pipelineLayout;
     std::optional<GraphicsPipeline> graphicsPipeline;
 };
+}

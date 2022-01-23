@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "Window.h"
 
+namespace rkrai {
 class MovementController {
     public:
     struct KeyMappings {
@@ -24,3 +25,4 @@ class MovementController {
     float moveSpeed = 3.0f;
     float lookSpeed = 1.5f;
 };
+}

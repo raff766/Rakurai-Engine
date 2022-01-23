@@ -4,9 +4,11 @@
 
 #include <functional>
 
+namespace rkrai {
 class GraphicsCommands {
     public:
     static void submitSingleTimeCommand(GraphicsDevice& device, std::function<void(vk::CommandBuffer)> command);
 
     private:
 };
+}

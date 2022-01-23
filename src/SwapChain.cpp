@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <stdexcept>
 
+namespace rkrai {
 SwapChain::SwapChain(GraphicsDevice& graphicsDevice, vk::Extent2D windowExtent) 
     :  graphicsDevice(graphicsDevice), windowExtent(windowExtent) {
     init();
@@ -256,4 +257,5 @@ vk::Result SwapChain::presentImage(uint32_t imageIndex) {
     } catch (const vk::OutOfDateKHRError& error) {
         return vk::Result::eErrorOutOfDateKHR;
     }
+}
 }

@@ -24,9 +24,9 @@ public:
 private:
     void loadGameObjects();
 
-    Window window{WIDTH, HEIGHT, "Test App"};
-    GraphicsDevice graphicsDevice{window};
-    Renderer renderer{window, graphicsDevice};
+    rkrai::Window window{WIDTH, HEIGHT, "Test App"};
+    rkrai::GraphicsDevice graphicsDevice{window};
+    rkrai::Renderer renderer{window, graphicsDevice};
     
-    std::vector<GameObject> gameObjects;
+    std::vector<rkrai::GameObject> gameObjects;
 };

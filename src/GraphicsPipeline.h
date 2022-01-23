@@ -5,6 +5,7 @@
 #include <vector>
 #include <utility>
 
+namespace rkrai {
 struct PipelineConfigInfo {
     vk::PipelineViewportStateCreateInfo viewportInfo;
     vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
@@ -52,3 +53,4 @@ private:
     vk::UniqueShaderModule vertShaderModule;
     vk::UniqueShaderModule fragShaderModule;
 };
+}

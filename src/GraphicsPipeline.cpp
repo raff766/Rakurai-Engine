@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <cassert>
 
+namespace rkrai {
 PipelineConfigInfo::PipelineConfigInfo(const PipelineConfigInfo& other) 
     : viewportInfo(other.viewportInfo), inputAssemblyInfo(other.inputAssemblyInfo),
     rasterizationInfo(other.rasterizationInfo), multisampleInfo(other.multisampleInfo),
@@ -140,4 +141,5 @@ PipelineConfigInfo GraphicsPipeline::getDefaultPipelineConfigInfo() {
     pipelineInfo.dynamicStateInfo = {{}, pipelineInfo.dynamicStateEnables};
 
     return pipelineInfo;
+}
 }

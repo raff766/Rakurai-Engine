@@ -9,6 +9,7 @@
 #include <optional>
 #include <utility>
 
+namespace rkrai {
 struct SwapChainSupportDetails {
     vk::SurfaceCapabilitiesKHR capabilities;
     std::vector<vk::SurfaceFormatKHR> surfaceFormats;
@@ -79,3 +80,4 @@ class GraphicsDevice {
     VkCommandBuffer beginSingleTimeCommand();
     void endSingleTimeCommand(vk::CommandBuffer commandBuffer);
 };
+}

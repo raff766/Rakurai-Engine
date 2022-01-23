@@ -3,6 +3,7 @@
 #include <cassert>
 #include <limits>
 
+namespace rkrai {
 void Camera::setOrthographicProjection(float left, float right, float top, float bottom, float near, float far) {
     projectionMatrix = glm::mat4{1.0f};
     projectionMatrix[0][0] = 2.0f / (right - left);
@@ -70,4 +71,5 @@ void Camera::setViewYXZ(glm::vec3 position, glm::vec3 rotation) {
     viewMatrix[3][0] = -glm::dot(u, position);
     viewMatrix[3][1] = -glm::dot(v, position);
     viewMatrix[3][2] = -glm::dot(w, position);
+}
 }

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+namespace rkrai {
 struct TransformComponent {
     glm::vec3 translation{};
     glm::vec3 scale{1.0f, 1.0f, 1.0f};
@@ -40,3 +41,4 @@ class GameObject {
 
     GameObject(id_t objId) : id(objId) {}
 };
+}

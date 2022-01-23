@@ -2,6 +2,7 @@
 
 #include "GraphicsDevice.h"
 
+namespace rkrai {
 class GraphicsBuffer {
     public:
     GraphicsBuffer(GraphicsDevice& device, vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties);
@@ -26,3 +27,4 @@ class GraphicsBuffer {
     vk::UniqueBuffer buffer;
     vk::UniqueDeviceMemory bufferMemory;
 };
+}

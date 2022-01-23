@@ -4,7 +4,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
-
+namespace rkrai {
 class Camera {
     public:
     void setOrthographicProjection(float left, float right, float top, float bottom, float near, float far);
@@ -21,3 +21,4 @@ class Camera {
     glm::mat4 projectionMatrix{1.0f};
     glm::mat4 viewMatrix{1.0f};
 };
+}

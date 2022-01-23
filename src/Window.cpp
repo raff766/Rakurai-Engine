@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+namespace rkrai {
 Window::Window(int width, int height, std::string name) 
     : width(width), height(height), windowName(name) {
     initWindow();
@@ -33,4 +34,5 @@ void Window::windowResizedCallback(GLFWwindow* glfwWindow, int width, int height
     window->framebufferResized = true;
     window->width = width;
     window->height = height;
+}
 }

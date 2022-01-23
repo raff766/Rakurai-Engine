@@ -27,12 +27,12 @@ TestApp::TestApp() {
 }
 
 void TestApp::run() {
-    Camera camera{};
-    GameObject cameraObject = GameObject::createGameObject();
-    MovementController cameraController{};
+    rkrai::Camera camera{};
+    rkrai::GameObject cameraObject = rkrai::GameObject::createGameObject();
+    rkrai::MovementController cameraController{};
 
-    std::vector<GraphicsBuffer> globalUboBuffers;
-    for (int i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+    std::vector<rkrai::GraphicsBuffer> globalUboBuffers;
+    for (int i = 0; i < rkrai::SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
         globalUboBuffers.emplace_back(
             graphicsDevice,
             sizeof(GlobalUbo),
@@ -40,7 +40,7 @@ void TestApp::run() {
             vk::MemoryPropertyFlagBits::eHostVisible
         );
     }
-    SimpleRenderSystem simpleRenderSystem{graphicsDevice, renderer.getSwapChainRenderPass(), globalUboBuffers};
+    rkrai::SimpleRenderSystem simpleRenderSystem{graphicsDevice, renderer.getSwapChainRenderPass(), globalUboBuffers};
 
     auto currentTime = std::chrono::high_resolution_clock::now();
     while(!window.shouldClose()) {
@@ -72,9 +72,9 @@ void TestApp::run() {
 }
 
 void TestApp::loadGameObjects() {
-    std::shared_ptr<Model> model = std::make_shared<Model>(graphicsDevice, "models/smooth_vase.obj");
+    std::shared_ptr<rkrai::Model> model = std::make_shared<rkrai::Model>(graphicsDevice, "models/smooth_vase.obj");
 
-    GameObject gameObj = GameObject::createGameObject();
+    rkrai::GameObject gameObj = rkrai::GameObject::createGameObject();
     gameObj.model = model;
     gameObj.transform.translation = {0.0f, 0.0f, 2.5f};
     gameObj.transform.scale = {1.0f, 1.0f, 1.0f};

@@ -11,6 +11,7 @@
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
+namespace rkrai {
 GraphicsDevice::GraphicsDevice(Window& window) : window(window) {
     vk::DynamicLoader dl;
     VULKAN_HPP_DEFAULT_DISPATCHER.init(dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr"));
@@ -31,7 +32,7 @@ void GraphicsDevice::createInstance() {
     }
 
     vk::ApplicationInfo appInfo{
-        "Test App", VK_MAKE_API_VERSION(0, 1, 0, 0), "No Engine", VK_MAKE_API_VERSION(0, 1, 0, 0), VK_API_VERSION_1_2
+        "Test App", VK_MAKE_API_VERSION(0, 1, 0, 0), "Rakurai Engine", VK_MAKE_API_VERSION(0, 1, 0, 0), VK_API_VERSION_1_2
     };
     std::vector<const char*> extensions = getRequiredExtensions();
 
@@ -237,4 +238,5 @@ uint32_t GraphicsDevice::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyF
         }
     }
     throw std::runtime_error("Failed to find suitable memory type!");
+}
 }

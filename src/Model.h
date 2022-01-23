@@ -11,6 +11,7 @@
 #include <memory>
 #include <optional>
 
+namespace rkrai {
 class Model {
     public:
     struct Vertex {
@@ -54,3 +55,4 @@ class Model {
     void createVertexBuffers(const std::vector<Vertex>& vertices);
     void createIndexBuffer(const std::vector<uint32_t>& indices);
 };
+}

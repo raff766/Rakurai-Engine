@@ -1,5 +1,6 @@
 #include "GameObject.h"
 
+namespace rkrai {
 // Matrix corrsponds to Translate * Ry * Rx * Rz * Scale
 // Rotations correspond to Tait-bryan angles of Y(1), X(2), Z(3)
 // https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
@@ -69,4 +70,5 @@ glm::mat3 TransformComponent::normalMatrix() {
             inverseScale.z * (c1 * c2),
         }
     };
+}
 }

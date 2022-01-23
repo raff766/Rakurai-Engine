@@ -10,6 +10,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
+namespace rkrai {
 struct SimplePushConstantData {
     glm::mat4 modelMat{1.0f};
     glm::mat4 normalMat{1.0f};
@@ -79,4 +80,5 @@ void SimpleRenderSystem::renderGameObjects(vk::CommandBuffer commandBuffer, std:
         obj.model->bind(commandBuffer);
         obj.model->draw(commandBuffer);
     }
+}
 }
