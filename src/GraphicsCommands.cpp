@@ -1,5 +1,8 @@
 #include "GraphicsCommands.h"
 
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+#include <vulkan/vulkan.hpp>
+
 namespace rkrai {
 void GraphicsCommands::submitSingleTimeCommand(GraphicsDevice& device, std::function<void(vk::CommandBuffer)> command) {
     vk::UniqueCommandBuffer commandBuffer = std::move(device.getDevice().allocateCommandBuffersUnique(

@@ -2,6 +2,8 @@
 
 #include "GraphicsDevice.h"
 
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+#include <vulkan/vulkan.hpp>
 #include <functional>
 
 namespace rkrai {

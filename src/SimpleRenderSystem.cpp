@@ -1,10 +1,11 @@
 #include "SimpleRenderSystem.h"
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_handles.hpp>
+#include "GraphicsPipeline.h"
+#include "SwapChain.h"
 
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+#include <vulkan/vulkan.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
-#include <stdexcept>
 #include <optional>
 
 #define GLM_FORCE_RADIANS
@@ -16,11 +17,29 @@ struct SimplePushConstantData {
     glm::mat4 normalMat{1.0f};
 };
 
-SimpleRenderSystem::SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::vector<GraphicsBuffer>& globalUboBuffers)
-    : graphicsDevice(device), globalUboBuffers(globalUboBuffers) {
+struct GlobalUbo {
+    glm::mat4 projMat{1.0f};
+    glm::mat4 viewMat{1.0f};
+    glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
+};
+
+SimpleRenderSystem::SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::shared_ptr<const Camera> camera)
+    : graphicsDevice(device), renderPass(renderPass), camera(camera) {
+    createGlobalUboBuffers();
     createGlobalUboDescriptors();
     createPipelineLayout();
-    createPipeline(renderPass);
+    createPipeline();
+}
+
+void SimpleRenderSystem::createGlobalUboBuffers() {
+    for (int i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+        globalUboBuffers.emplace_back(
+            graphicsDevice,
+            sizeof(GlobalUbo),
+            vk::BufferUsageFlagBits::eUniformBuffer,
+            vk::MemoryPropertyFlagBits::eHostVisible
+        );
+    }
 }
 
 void SimpleRenderSystem::createGlobalUboDescriptors() {
@@ -43,11 +62,11 @@ void SimpleRenderSystem::createPipelineLayout() {
         0,
         sizeof(SimplePushConstantData)
     };
-    vk::DescriptorSetLayout setLayout = descriptors->getSetLayout();
-    pipelineLayout = graphicsDevice.getDevice().createPipelineLayoutUnique({{}, setLayout, pushConstantRange});
+    vk::DescriptorSetLayout descriptorSetLayout = descriptors->getSetLayout();
+    pipelineLayout = graphicsDevice.getDevice().createPipelineLayoutUnique({{}, descriptorSetLayout, pushConstantRange});
 }
 
-void SimpleRenderSystem::createPipeline(vk::RenderPass renderPass) {
+void SimpleRenderSystem::createPipeline() {
     PipelineConfigInfo pipelineConfig = GraphicsPipeline::getDefaultPipelineConfigInfo();
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = *pipelineLayout;
@@ -59,26 +78,26 @@ void SimpleRenderSystem::createPipeline(vk::RenderPass renderPass) {
     );
 }
 
-void SimpleRenderSystem::bindGlobalUbo(vk::CommandBuffer commandBuffer, int frameIndex) {
-    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, *pipelineLayout, 0, descriptors->getDescriptorSets()[frameIndex], {});
-}
+void SimpleRenderSystem::render(vk::CommandBuffer commandBuffer, int currentFrameIndex) {
+    GlobalUbo globalUbo{};
+    globalUbo.projMat = camera->getProjection();
+    globalUbo.viewMat = camera->getView();
+    globalUboBuffers[currentFrameIndex].mapData(&globalUbo);
 
-void SimpleRenderSystem::renderGameObjects(vk::CommandBuffer commandBuffer, std::vector<GameObject>& gameObjects, const Camera& camera) {
+    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, *pipelineLayout, 0, descriptors->getDescriptorSets()[currentFrameIndex], {});
     graphicsPipeline->bind(commandBuffer);
 
-    glm::mat4 projectionView = camera.getProjection() * camera.getView();
-
-    for (auto& obj : gameObjects) {
+    for (auto& gameObj : gameObjects) {
         SimplePushConstantData push{};
-        push.modelMat = obj.transform.modelMatrix();
-        push.normalMat = obj.transform.normalMatrix();
+        push.modelMat = gameObj->transform.modelMatrix();
+        push.normalMat = gameObj->transform.normalMatrix();
         
         commandBuffer.pushConstants(
             *pipelineLayout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
             0, sizeof(SimplePushConstantData), &push
         );
-        obj.model->bind(commandBuffer);
-        obj.model->draw(commandBuffer);
+        gameObj->model->bind(commandBuffer);
+        gameObj->model->draw(commandBuffer);
     }
 }
 }

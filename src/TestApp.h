@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SimpleRenderSystem.h"
 #include "Window.h"
 #include "GraphicsDevice.h"
 #include "SwapChain.h"
@@ -28,5 +29,5 @@ private:
     rkrai::GraphicsDevice graphicsDevice{window};
     rkrai::Renderer renderer{window, graphicsDevice};
     
-    std::vector<rkrai::GameObject> gameObjects;
+    std::vector<std::shared_ptr<rkrai::GameObject>> gameObjects;
 };

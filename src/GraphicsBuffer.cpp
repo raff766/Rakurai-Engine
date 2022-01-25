@@ -2,7 +2,8 @@
 #include "GraphicsDevice.h"
 #include "GraphicsCommands.h"
 
-#include <stdexcept>
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+#include <vulkan/vulkan.hpp>
 
 namespace rkrai {
 GraphicsBuffer::GraphicsBuffer(GraphicsDevice& device, vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties)

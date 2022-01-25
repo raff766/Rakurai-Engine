@@ -1,6 +1,8 @@
 #include "GraphicsPipeline.h"
 #include "Model.h"
 
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+#include <vulkan/vulkan.hpp>
 #include <fstream>
 #include <filesystem>
 #include <iostream>
@@ -65,8 +67,8 @@ void GraphicsPipeline::createGraphicsPipeline(
     const std::string& fragFilepath,
     const PipelineConfigInfo& configInfo) {
     
-    //assert(!configInfo.pipelineLayout && "Cannot create graphics pipeline: no pipelineLayout provided!");
-    //assert(!configInfo.renderPass && "Cannot create graphics pipeline: no renderPass provided!");
+    assert(configInfo.pipelineLayout && "Cannot create graphics pipeline: no pipelineLayout provided!");
+    assert(configInfo.renderPass && "Cannot create graphics pipeline: no renderPass provided!");
     
     std::vector<char> vertCode = readFile(vertFilepath);
     std::vector<char> fragCode = readFile(fragFilepath);
@@ -83,12 +85,6 @@ void GraphicsPipeline::createGraphicsPipeline(
     auto attributeDescriptions = Model::Vertex::getAttributeDescriptions();
     vk::PipelineVertexInputStateCreateInfo vertexInputInfo{{}, bindingDescriptions, attributeDescriptions};
 
-    /*vk::GraphicsPipelineCreateInfo pipelineInfo{
-        {}, shaderStages, vertexInputInfo, configInfo.inputAssemblyInfo, {}, configInfo.viewportInfo,
-        configInfo.rasterizationInfo, configInfo.multisampleInfo, configInfo.depthStencilInfo,
-        configInfo.colorBlendInfo, configInfo.dynamicStateInfo, 
-        configInfo.pipelineLayout, configInfo.renderPass, configInfo.subpass, {}, -1
-    };*/
     vk::GraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.setStages(shaderStages);
     pipelineInfo.pVertexInputState = &vertexInputInfo;

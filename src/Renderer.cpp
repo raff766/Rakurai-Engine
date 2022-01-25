@@ -1,6 +1,9 @@
 #include "Renderer.h"
 
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+#include <vulkan/vulkan.hpp>
 #include <stdexcept>
+#include <cassert>
 
 namespace rkrai {
 Renderer::Renderer(Window& window, GraphicsDevice& device) : window(window), graphicsDevice(device) {
@@ -38,29 +41,33 @@ void Renderer::createCommandBuffers() {
     commandBuffers = graphicsDevice.getDevice().allocateCommandBuffersUnique(allocInfo);
 }
 
-vk::CommandBuffer Renderer::beginFrame() {
-    assert(!isFrameStarted && "Cant call begin frame while already in progress!");
-    
+void Renderer::drawFrame() {
+    assert(renderSystem != nullptr && "A RenderSystem must be set before attempting to draw frames.");
+
+    if (beginFrame()) {
+        beginSwapChainRenderPass();
+        renderSystem->render(*commandBuffers[currentFrameIndex], currentFrameIndex);
+        endSwapChainRenderPass();
+        endFrame();
+    }
+}
+
+bool Renderer::beginFrame() {
     vk::ResultValue<uint32_t> result = swapChain->acquireNextImage();
     currentImageIndex = result.value;
     if (result.result == vk::Result::eErrorOutOfDateKHR) {
         recreateSwapChain();
-        return nullptr;
+        return false;
     } else if (result.result != vk::Result::eSuccess && result.result != vk::Result::eSuboptimalKHR) {
         throw std::runtime_error("Failed to acquire swapchain image");
     }
     isFrameStarted = true;
+    commandBuffers[currentFrameIndex]->begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
 
-    vk::CommandBuffer commandBuffer = getCurrentCommandBuffer();
-    commandBuffer.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
-
-    return commandBuffer;
+    return true;
 }
 
-void Renderer::beginSwapChainRenderPass(vk::CommandBuffer commandBuffer) {
-    assert(isFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress!");
-    assert(commandBuffer == getCurrentCommandBuffer() && "Can't begin renderpass on a command buffer from a different frame!");
-
+void Renderer::beginSwapChainRenderPass() {
     vk::Extent2D swapChainExtent = swapChain->getExtent();
 
     vk::RenderPassBeginInfo renderPassInfo{};
@@ -73,29 +80,25 @@ void Renderer::beginSwapChainRenderPass(vk::CommandBuffer commandBuffer) {
     clearValues[1].depthStencil = vk::ClearDepthStencilValue{1.0f, 0};
     renderPassInfo.setClearValues(clearValues);
 
-    commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+    commandBuffers[currentFrameIndex]->beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 
     vk::Viewport viewport{
         0.0f, 0.0f, static_cast<float>(swapChainExtent.width), static_cast<float>(swapChainExtent.height), 0.0f, 1.0f
     };
     vk::Rect2D scissor{{0, 0}, swapChainExtent};
 
-    commandBuffer.setViewport(0, viewport);
-    commandBuffer.setScissor(0, scissor);
+    commandBuffers[currentFrameIndex]->setViewport(0, viewport);
+    commandBuffers[currentFrameIndex]->setScissor(0, scissor);
 }
 
-void Renderer::endSwapChainRenderPass(vk::CommandBuffer commandBuffer) {
-    assert(isFrameStarted && "Can't call endSwapChainRenderPass if frame is not in progress!");
-    assert(commandBuffer == getCurrentCommandBuffer() && "Can't end renderpass on a command buffer from a different frame!");
-    commandBuffer.endRenderPass();
+void Renderer::endSwapChainRenderPass() {
+    commandBuffers[currentFrameIndex]->endRenderPass();
 }
 
 void Renderer::endFrame() {
-    assert(isFrameStarted && "Can't call endFrame while frame is not in progress!");
-    vk::CommandBuffer commandBuffer = getCurrentCommandBuffer();
-    commandBuffer.end();
+    commandBuffers[currentFrameIndex]->end();
 
-    swapChain->submitDrawCommands(commandBuffer);
+    swapChain->submitDrawCommands(*commandBuffers[currentFrameIndex]);
 
     vk::Result result = swapChain->presentImage(currentImageIndex);
     if ( result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || window.wasFramebufferResized()) {

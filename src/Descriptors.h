@@ -3,11 +3,11 @@
 #include "GraphicsDevice.h"
 #include "GraphicsBuffer.h"
 
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+#include <vulkan/vulkan.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_handles.hpp>
 
 namespace rkrai {
 class Descriptors {

@@ -1,6 +1,9 @@
 #pragma once
 
 #include "GraphicsDevice.h"
+
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+#include <vulkan/vulkan.hpp>
 #include <string>
 #include <vector>
 #include <utility>
@@ -33,6 +36,8 @@ public:
         const PipelineConfigInfo& configInfo);
     GraphicsPipeline(const GraphicsPipeline&) = delete;
     void operator=(const GraphicsPipeline&) = delete;
+    GraphicsPipeline(GraphicsPipeline&&) = default;
+    GraphicsPipeline& operator=(GraphicsPipeline&&) = delete;
 
     void bind(vk::CommandBuffer commandBuffer);
     

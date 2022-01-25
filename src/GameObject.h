@@ -12,8 +12,8 @@ struct TransformComponent {
     glm::vec3 scale{1.0f, 1.0f, 1.0f};
     glm::vec3 rotation{};
 
-    glm::mat4 modelMatrix();
-    glm::mat3 normalMatrix();
+    glm::mat4 modelMatrix() const;
+    glm::mat3 normalMatrix() const;
 };
 
 class GameObject {
@@ -24,15 +24,14 @@ class GameObject {
     glm::vec3 color{};
     TransformComponent transform{};
 
+    GameObject() {
+        static id_t currentId = 0;
+        id = currentId++;
+    }
     GameObject(const GameObject&) = delete;
     void operator=(const GameObject&) = delete;
     GameObject(GameObject&&) = default;
     GameObject& operator=(GameObject&&) = default;
-
-    static GameObject createGameObject() {
-        static id_t currentId = 0;
-        return GameObject{currentId++};
-    }
 
     id_t getId() { return id; }
 

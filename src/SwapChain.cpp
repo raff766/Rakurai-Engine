@@ -1,7 +1,8 @@
 #include "SwapChain.h"
 
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+#include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
-#include <stdexcept>
 
 namespace rkrai {
 SwapChain::SwapChain(GraphicsDevice& graphicsDevice, vk::Extent2D windowExtent) 
