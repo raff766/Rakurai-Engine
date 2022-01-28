@@ -44,7 +44,7 @@ class GraphicsDevice {
 
     private:
     const std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-    const std::vector<const char*> requiredDeviceExtensions = {"VK_KHR_swapchain", "VK_KHR_shader_non_semantic_info"};
+    const std::vector<const char*> requiredDeviceExtensions = {"VK_KHR_swapchain"};
     const bool validationLayersEnabled = true;
     
     Window& window;

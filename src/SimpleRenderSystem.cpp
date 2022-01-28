@@ -1,6 +1,8 @@
 #include "SimpleRenderSystem.h"
+#include "Descriptors.h"
 #include "GraphicsPipeline.h"
 #include "SwapChain.h"
+#include <vulkan/vulkan_enums.hpp>
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>
@@ -20,7 +22,10 @@ struct SimplePushConstantData {
 struct GlobalUbo {
     glm::mat4 projMat{1.0f};
     glm::mat4 viewMat{1.0f};
-    glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
+    glm::vec4 ambientLightColor{1.0f, 1.0f, 1.0f, 0.02f}; //w is intensity
+    glm::vec4 lightColor{1.0f};
+    glm::vec3 lightPosition{-1.0f};
+    //glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
 };
 
 SimpleRenderSystem::SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::shared_ptr<const Camera> camera)
@@ -46,7 +51,7 @@ void SimpleRenderSystem::createGlobalUboDescriptors() {
     descriptors.emplace(
         graphicsDevice,
         vk::DescriptorType::eUniformBuffer,
-        vk::ShaderStageFlagBits::eVertex,
+        vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
         globalUboBuffers.size(),
         1,
         0

@@ -8,7 +8,7 @@ namespace rkrai {
 Descriptors::Descriptors(
         GraphicsDevice& device,
         vk::DescriptorType descriptorType,
-        vk::ShaderStageFlagBits shaderStages,
+        vk::ShaderStageFlags shaderStages,
         uint32_t setCount,
         uint32_t descriptorsPerSet,
         uint32_t binding) 

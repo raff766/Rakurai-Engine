@@ -1,5 +1,4 @@
 #version 450
-#extension GL_EXT_debug_printf : enable
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 color;
@@ -16,18 +15,23 @@ layout(push_constant) uniform Push {
 layout(binding = 0) uniform UniformBufferObject {
     mat4 projMat;
     mat4 viewMat;
-    vec3 lightDirection;
+    vec4 ambientLightColor;
+    vec4 lightColor;
+    vec3 lightPosition;
 } ubo;
 
-const float AMBIENT = 0.02;
-
 void main() {
-    debugPrintfEXT("Hello world!");
+    vec4 vertexWorldPos = push.modelMat * vec4(position, 1.0);
+    vec3 normalWorldDir = normalize(mat3(push.normalMat) * normal);
 
-    gl_Position = ubo.projMat * ubo.viewMat * push.modelMat * vec4(position, 1.0);
+    gl_Position = ubo.projMat * ubo.viewMat * vertexWorldPos;
 
-    vec3 normalWorldSpace = normalize(mat3(push.normalMat) * normal);
-    float lightIntensity = AMBIENT + max(dot(normalWorldSpace, ubo.lightDirection), 0);
+    vec3 directionToLight = ubo.lightPosition - vertexWorldPos.xyz;
+    float attenuation = 1.0 / dot(directionToLight, directionToLight); //distance squared
 
-    fragColor = lightIntensity * color;
+    vec3 lightColor = attenuation * ubo.lightColor.xyz * ubo.lightColor.w;
+    vec3 ambientLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
+    vec3 diffuseLight = lightColor * max(dot(normalWorldDir, normalize(directionToLight)), 0);
+
+    fragColor = (diffuseLight + ambientLight) * color;
 }

@@ -1,5 +1,7 @@
 #include "TestApp.h"
 #include "Camera.h"
+#include "GameObject.h"
+#include "Model.h"
 #include "MovementController.h"
 #include "GraphicsBuffer.h"
 #include "SwapChain.h"
@@ -46,11 +48,17 @@ void TestApp::run() {
 }
 
 void TestApp::loadGameObjects() {
-    std::shared_ptr<rkrai::Model> model = std::make_shared<rkrai::Model>(graphicsDevice, "models/smooth_vase.obj");
-
+    auto model = std::make_shared<rkrai::Model>(graphicsDevice, "models/smooth_vase.obj");
     auto gameObj = std::make_shared<rkrai::GameObject>();
     gameObj->model = model;
     gameObj->transform.translation = {0.0f, 0.0f, 2.5f};
     gameObj->transform.scale = {1.0f, 1.0f, 1.0f};
     gameObjects.push_back(gameObj);
+
+    auto floorModel = std::make_shared<rkrai::Model>(graphicsDevice, "models/quad.obj");
+    auto floor = std::make_shared<rkrai::GameObject>();
+    floor->model = floorModel;
+    floor->transform.translation = {0.0f, 0.0f, 2.5f};
+    floor->transform.scale = {3.0f, 1.0f, 3.0f};
+    gameObjects.push_back(floor);
 }
