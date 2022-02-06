@@ -30,7 +30,6 @@ void TestApp::run() {
 
     auto currentTime = std::chrono::high_resolution_clock::now();
     renderer.setRenderSystem(simpleRenderSystem);
-    camera->setPerspectiveProjection(50.0f, renderer.getAspectRatio(), 0.1f, 1000.0f);
     while(!window.shouldClose()) {
         glfwPollEvents();
 
@@ -39,6 +38,7 @@ void TestApp::run() {
         currentTime = newTime;
 
         cameraController.moveInPlaneXZ(window.getGLFWWindow(), frameTime, cameraObject);
+        camera->setPerspectiveProjection(50.0f, renderer.getAspectRatio(), 0.1f, 1000.0f);
         camera->setViewYXZ(cameraObject.transform.translation, cameraObject.transform.rotation);
 
         renderer.drawFrame();
