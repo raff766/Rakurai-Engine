@@ -4,8 +4,12 @@
 #include "Model.h"
 #include "MovementController.h"
 #include "GraphicsBuffer.h"
+#include "RenderingSystems/BillboardRenderSystem.h"
+#include "RenderingSystems/SimpleRenderSystem.h"
+#include "Renderer.h"
 #include "SwapChain.h"
 
+#include <glm/fwd.hpp>
 #include <glm/glm.hpp>
 #include <chrono>
 #include <memory>
@@ -21,15 +25,21 @@ TestApp::TestApp() {
 void TestApp::run() {
     auto camera = std::make_shared<rkrai::Camera>();
     auto simpleRenderSystem = std::make_shared<rkrai::SimpleRenderSystem>(graphicsDevice, renderer.getSwapChainRenderPass(), camera);
+    auto billboardRenderSystem = std::make_shared<rkrai::BillboardRenderSystem>(graphicsDevice, renderer.getSwapChainRenderPass(), camera);
     rkrai::GameObject cameraObject{};
     rkrai::MovementController cameraController{};
     
-    for (auto& gameObj : gameObjects) {
-        simpleRenderSystem->addGameObject(gameObj);
+    for (const auto& gameObj : gameObjects) {
+        if (gameObj->model != nullptr) {
+            simpleRenderSystem->addGameObject(gameObj);
+        } else if (gameObj->billboard != nullptr) {
+            billboardRenderSystem->addGameObject(gameObj);
+        }
     }
 
     auto currentTime = std::chrono::high_resolution_clock::now();
-    renderer.setRenderSystem(simpleRenderSystem);
+    renderer.addRenderSystem(simpleRenderSystem);
+    renderer.addRenderSystem(billboardRenderSystem);
     while(!window.shouldClose()) {
         glfwPollEvents();
 
@@ -61,4 +71,12 @@ void TestApp::loadGameObjects() {
     floor->transform.translation = {0.0f, 0.0f, 2.5f};
     floor->transform.scale = {3.0f, 1.0f, 3.0f};
     gameObjects.push_back(floor);
+
+    auto lightBillboard = std::make_shared<rkrai::Billboard>();
+    auto light = std::make_shared<rkrai::GameObject>();
+    lightBillboard->billboardColor = glm::vec4{1.0f};
+    lightBillboard->billboardDimensions = glm::vec2{0.1f};
+    light->billboard = lightBillboard;
+    light->transform.translation = {0.0f, -1.0f, 1.0f};
+    gameObjects.push_back(light);
 }

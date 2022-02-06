@@ -19,7 +19,7 @@ public:
     Renderer(const Renderer&) = delete;
     void operator=(const Renderer&) = delete;
 
-    void setRenderSystem(std::shared_ptr<RenderSystem> renderSystem) { this->renderSystem = renderSystem; }
+    void addRenderSystem(std::shared_ptr<RenderSystem> renderSystem) { this->renderSystems.push_back(renderSystem); }
     void drawFrame();
 
     vk::RenderPass getSwapChainRenderPass() const { return swapChain->getRenderPass(); }
@@ -45,6 +45,6 @@ private:
     int currentFrameIndex = 0;
     bool isFrameStarted = false;
 
-    std::shared_ptr<RenderSystem> renderSystem;
+    std::vector<std::shared_ptr<RenderSystem>> renderSystems;
 };
 }

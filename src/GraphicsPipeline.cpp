@@ -80,10 +80,8 @@ void GraphicsPipeline::createGraphicsPipeline(
         vk::PipelineShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eVertex, *vertShaderModule, "main"},
         vk::PipelineShaderStageCreateInfo{{}, vk::ShaderStageFlagBits::eFragment, *fragShaderModule, "main"}
     };
-
-    auto bindingDescriptions = Model::Vertex::getBindingDescriptions();
-    auto attributeDescriptions = Model::Vertex::getAttributeDescriptions();
-    vk::PipelineVertexInputStateCreateInfo vertexInputInfo{{}, bindingDescriptions, attributeDescriptions};
+    
+    vk::PipelineVertexInputStateCreateInfo vertexInputInfo{{}, configInfo.bindingDescriptions, configInfo.attributeDescriptions};
 
     vk::GraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.setStages(shaderStages);

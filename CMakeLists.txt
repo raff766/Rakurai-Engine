@@ -16,7 +16,7 @@ find_package(glfw3 3.3 REQUIRED)
 find_package(Vulkan REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw vulkan ${CMAKE_DL_LIBS})
-target_include_directories(${PROJECT_NAME} PUBLIC libs)
+target_include_directories(${PROJECT_NAME} PUBLIC libs src)
 
 # Compile Shaders
 file(GLOB_RECURSE SHADER_FILES CONFIGURE_DEPENDS shaders/*.frag shaders/*.vert)

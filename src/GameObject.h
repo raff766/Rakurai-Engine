@@ -15,11 +15,17 @@ struct TransformComponent {
     glm::mat3 normalMatrix() const;
 };
 
+struct Billboard {
+    glm::vec4 billboardColor{1.0f}; //w is intensity
+    glm::vec2 billboardDimensions{0.1f};
+};
+
 class GameObject {
     public:
     using id_t = unsigned int;
 
-    std::shared_ptr<Model> model{};
+    std::shared_ptr<Model> model;
+    std::shared_ptr<Billboard> billboard;
     glm::vec3 color{};
     TransformComponent transform{};
 

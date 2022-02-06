@@ -10,6 +10,8 @@
 
 namespace rkrai {
 struct PipelineConfigInfo {
+    std::vector<vk::VertexInputBindingDescription> bindingDescriptions;
+    std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
     vk::PipelineViewportStateCreateInfo viewportInfo;
     vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
     vk::PipelineRasterizationStateCreateInfo rasterizationInfo;

@@ -42,11 +42,13 @@ void Renderer::createCommandBuffers() {
 }
 
 void Renderer::drawFrame() {
-    assert(renderSystem != nullptr && "A RenderSystem must be set before attempting to draw frames.");
+    //assert(renderSystems != nullptr && "A RenderSystem must be set before attempting to draw frames.");
 
     if (beginFrame()) {
         beginSwapChainRenderPass();
-        renderSystem->render(*commandBuffers[currentFrameIndex], currentFrameIndex);
+        for (auto& renderSystem : renderSystems) {
+            renderSystem->render(*commandBuffers[currentFrameIndex], currentFrameIndex);
+        }
         endSwapChainRenderPass();
         endFrame();
     }

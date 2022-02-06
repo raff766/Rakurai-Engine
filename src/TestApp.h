@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SimpleRenderSystem.h"
+#include "RenderingSystems/SimpleRenderSystem.h"
 #include "Window.h"
 #include "GraphicsDevice.h"
 #include "SwapChain.h"

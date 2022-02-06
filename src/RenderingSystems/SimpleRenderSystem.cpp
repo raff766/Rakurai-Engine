@@ -1,6 +1,7 @@
 #include "SimpleRenderSystem.h"
 #include "Descriptors.h"
 #include "GraphicsPipeline.h"
+#include "Model.h"
 #include "SwapChain.h"
 #include <vulkan/vulkan_enums.hpp>
 
@@ -19,45 +20,44 @@ struct SimplePushConstantData {
     glm::mat4 normalMat{1.0f};
 };
 
-struct GlobalUbo {
+struct SimpleUbo {
     glm::mat4 projMat{1.0f};
     glm::mat4 viewMat{1.0f};
     glm::vec4 ambientLightColor{1.0f, 1.0f, 1.0f, 0.02f}; //w is intensity
     glm::vec4 lightColor{1.0f};
     glm::vec3 lightPosition{0.0f, -1.0f, 1.0f};
-    //glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
 };
 
 SimpleRenderSystem::SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::shared_ptr<const Camera> camera)
     : graphicsDevice(device), renderPass(renderPass), camera(camera) {
-    createGlobalUboBuffers();
-    createGlobalUboDescriptors();
+    createUboBuffers();
+    createUboDescriptors();
     createPipelineLayout();
     createPipeline();
 }
 
-void SimpleRenderSystem::createGlobalUboBuffers() {
+void SimpleRenderSystem::createUboBuffers() {
     for (int i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
-        globalUboBuffers.emplace_back(
+        uboBuffers.emplace_back(
             graphicsDevice,
-            sizeof(GlobalUbo),
+            sizeof(SimpleUbo),
             vk::BufferUsageFlagBits::eUniformBuffer,
             vk::MemoryPropertyFlagBits::eHostVisible
         );
     }
 }
 
-void SimpleRenderSystem::createGlobalUboDescriptors() {
-    descriptors.emplace(
+void SimpleRenderSystem::createUboDescriptors() {
+    uboDescriptors.emplace(
         graphicsDevice,
         vk::DescriptorType::eUniformBuffer,
         vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-        globalUboBuffers.size(),
+        uboBuffers.size(),
         1,
         0
     );
-    for (int i = 0; i < globalUboBuffers.size(); i++) {
-        descriptors->populateDescriptorSet(i, globalUboBuffers[i]);
+    for (int i = 0; i < uboBuffers.size(); i++) {
+        uboDescriptors->populateDescriptorSet(i, uboBuffers[i]);
     }
 }
 
@@ -67,7 +67,7 @@ void SimpleRenderSystem::createPipelineLayout() {
         0,
         sizeof(SimplePushConstantData)
     };
-    vk::DescriptorSetLayout descriptorSetLayout = descriptors->getSetLayout();
+    vk::DescriptorSetLayout descriptorSetLayout = uboDescriptors->getSetLayout();
     pipelineLayout = graphicsDevice.getDevice().createPipelineLayoutUnique({{}, descriptorSetLayout, pushConstantRange});
 }
 
@@ -75,6 +75,8 @@ void SimpleRenderSystem::createPipeline() {
     PipelineConfigInfo pipelineConfig = GraphicsPipeline::getDefaultPipelineConfigInfo();
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = *pipelineLayout;
+    pipelineConfig.bindingDescriptions = Model::Vertex::getBindingDescriptions();
+    pipelineConfig.attributeDescriptions = Model::Vertex::getAttributeDescriptions();
     graphicsPipeline.emplace(
         graphicsDevice,
         "shaders/SimpleShader.vert.spv",
@@ -84,15 +86,21 @@ void SimpleRenderSystem::createPipeline() {
 }
 
 void SimpleRenderSystem::render(vk::CommandBuffer commandBuffer, int currentFrameIndex) {
-    GlobalUbo globalUbo{};
-    globalUbo.projMat = camera->getProjection();
-    globalUbo.viewMat = camera->getView();
-    globalUboBuffers[currentFrameIndex].mapData(&globalUbo);
+    SimpleUbo simpleUbo{};
+    simpleUbo.projMat = camera->getProjection();
+    simpleUbo.viewMat = camera->getView();
+    uboBuffers[currentFrameIndex].mapData(&simpleUbo);
 
-    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, *pipelineLayout, 0, descriptors->getDescriptorSets()[currentFrameIndex], {});
     graphicsPipeline->bind(commandBuffer);
+    commandBuffer.bindDescriptorSets(
+        vk::PipelineBindPoint::eGraphics,
+        *pipelineLayout,
+        0,
+        uboDescriptors->getDescriptorSets()[currentFrameIndex],
+        {}
+    );
 
-    for (auto& gameObj : gameObjects) {
+    for (const auto& gameObj : gameObjects) {
         SimplePushConstantData push{};
         push.modelMat = gameObj->transform.modelMatrix();
         push.normalMat = gameObj->transform.normalMatrix();

@@ -14,11 +14,11 @@
 #include <vector>
 
 namespace rkrai {
-class SimpleRenderSystem : public RenderSystem {
+class BillboardRenderSystem : public RenderSystem {
 public:
-    SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::shared_ptr<const Camera> camera);
-    SimpleRenderSystem(const SimpleRenderSystem&) = delete;
-    void operator=(const SimpleRenderSystem&) = delete;
+    BillboardRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::shared_ptr<const Camera> camera);
+    BillboardRenderSystem(const BillboardRenderSystem&) = delete;
+    void operator=(const BillboardRenderSystem&) = delete;
 
     void addGameObject(std::shared_ptr<const GameObject> gameObject) { gameObjects.push_back(gameObject); }
     void removeGameObject();
@@ -26,8 +26,8 @@ public:
     GraphicsPipeline& getPipeline() { return *graphicsPipeline; }
 
 private:
-    void createGlobalUboBuffers();
-    void createGlobalUboDescriptors();
+    void createUboBuffers();
+    void createUboDescriptors();
     void createPipelineLayout();
     void createPipeline();
     void render(vk::CommandBuffer commandBuffer, int currentFrameIndex);
@@ -38,8 +38,8 @@ private:
     std::vector<std::shared_ptr<const GameObject>> gameObjects;
     std::shared_ptr<const Camera> camera;
     
-    std::vector<GraphicsBuffer> globalUboBuffers;
-    std::optional<Descriptors> descriptors;
+    std::vector<GraphicsBuffer> uboBuffers;
+    std::optional<Descriptors> uboDescriptors;
     vk::UniquePipelineLayout pipelineLayout;
     std::optional<GraphicsPipeline> graphicsPipeline;
 };
