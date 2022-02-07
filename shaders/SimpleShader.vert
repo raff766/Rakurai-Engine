@@ -7,28 +7,33 @@ layout(location = 3) in vec2 uv;
 
 layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec3 fragWorldPos;
-layout(location = 2) out vec3 fragNormalWorldDir;
+layout(location = 2) out vec3 fragNormalWorld;
 
 layout(push_constant) uniform Push {
     mat4 modelMat;
     mat4 normalMat;
 } push;
 
+struct PointLight {
+    vec4 position;
+    vec4 color;
+};
+
 layout(binding = 0) uniform UniformBufferObject {
     mat4 projMat;
     mat4 viewMat;
     vec4 ambientLightColor;
-    vec4 lightColor;
-    vec3 lightPosition;
+    PointLight pointLights[10];
+    int numLights;
 } ubo;
 
 void main() {
     vec4 vertexWorldPos = push.modelMat * vec4(position, 1.0);
-    vec3 normalWorldDir = normalize(mat3(push.normalMat) * normal);
+    vec3 normalWorld = normalize(mat3(push.normalMat) * normal);
 
     gl_Position = ubo.projMat * ubo.viewMat * vertexWorldPos;
 
     fragColor = color;
     fragWorldPos = vertexWorldPos.xyz;
-    fragNormalWorldDir = normalWorldDir;
+    fragNormalWorld = normalWorld;
 }

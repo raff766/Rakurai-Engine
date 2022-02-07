@@ -3,6 +3,7 @@
 #include "GraphicsPipeline.h"
 #include "Model.h"
 #include "SwapChain.h"
+#include <glm/fwd.hpp>
 #include <vulkan/vulkan_enums.hpp>
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
@@ -15,17 +16,25 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 namespace rkrai {
+
+#define MAX_POINT_LIGHTS 10
+
 struct SimplePushConstantData {
     glm::mat4 modelMat{1.0f};
     glm::mat4 normalMat{1.0f};
+};
+
+struct PointLight {
+    glm::vec4 position{0.0f}; //w is ignored
+    glm::vec4 color{1.0f}; //w is intensity
 };
 
 struct SimpleUbo {
     glm::mat4 projMat{1.0f};
     glm::mat4 viewMat{1.0f};
     glm::vec4 ambientLightColor{1.0f, 1.0f, 1.0f, 0.02f}; //w is intensity
-    glm::vec4 lightColor{1.0f};
-    glm::vec3 lightPosition{0.0f, -1.0f, 1.0f};
+    PointLight pointLights[MAX_POINT_LIGHTS];
+    int numLights;
 };
 
 SimpleRenderSystem::SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::shared_ptr<const Camera> camera)
@@ -89,6 +98,17 @@ void SimpleRenderSystem::render(vk::CommandBuffer commandBuffer, int currentFram
     SimpleUbo simpleUbo{};
     simpleUbo.projMat = camera->getProjection();
     simpleUbo.viewMat = camera->getView();
+
+    for (const auto& gameObj : gameObjects) {
+        if (gameObj->pointLight != nullptr) {
+            PointLight pointLight{};
+            pointLight.position = glm::vec4{gameObj->transform.translation, 1.0f};
+            pointLight.color = gameObj->pointLight->color;
+            simpleUbo.pointLights[simpleUbo.numLights] = pointLight;
+            simpleUbo.numLights++;
+        }
+    }
+
     uboBuffers[currentFrameIndex].mapData(&simpleUbo);
 
     graphicsPipeline->bind(commandBuffer);
@@ -101,6 +121,7 @@ void SimpleRenderSystem::render(vk::CommandBuffer commandBuffer, int currentFram
     );
 
     for (const auto& gameObj : gameObjects) {
+        if (gameObj->model == nullptr) continue;
         SimplePushConstantData push{};
         push.modelMat = gameObj->transform.modelMatrix();
         push.normalMat = gameObj->transform.normalMatrix();
@@ -109,8 +130,10 @@ void SimpleRenderSystem::render(vk::CommandBuffer commandBuffer, int currentFram
             *pipelineLayout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
             0, sizeof(SimplePushConstantData), &push
         );
+
         gameObj->model->bind(commandBuffer);
         gameObj->model->draw(commandBuffer);
     }
+    simpleUbo.numLights = 0;
 }
 }

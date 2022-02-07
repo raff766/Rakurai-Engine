@@ -97,8 +97,8 @@ void BillboardRenderSystem::render(vk::CommandBuffer commandBuffer, int currentF
 
     for (const auto& gameObject : gameObjects) {
         BillboardPushConstantData push{};
-        push.billboardColor = gameObject->billboard->billboardColor;
-        push.billboardDimensions = gameObject->billboard->billboardDimensions;
+        push.billboardColor = gameObject->billboard->color;
+        push.billboardDimensions = gameObject->billboard->dimensions;
         push.billboardPosition = gameObject->transform.translation;
 
         commandBuffer.pushConstants(

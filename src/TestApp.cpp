@@ -30,9 +30,10 @@ void TestApp::run() {
     rkrai::MovementController cameraController{};
     
     for (const auto& gameObj : gameObjects) {
-        if (gameObj->model != nullptr) {
+        if (gameObj->model != nullptr || gameObj->pointLight != nullptr) {
             simpleRenderSystem->addGameObject(gameObj);
-        } else if (gameObj->billboard != nullptr) {
+        }
+        if (gameObj->billboard != nullptr) {
             billboardRenderSystem->addGameObject(gameObj);
         }
     }
@@ -72,11 +73,21 @@ void TestApp::loadGameObjects() {
     floor->transform.scale = {3.0f, 1.0f, 3.0f};
     gameObjects.push_back(floor);
 
-    auto lightBillboard = std::make_shared<rkrai::Billboard>();
-    auto light = std::make_shared<rkrai::GameObject>();
-    lightBillboard->billboardColor = glm::vec4{1.0f};
-    lightBillboard->billboardDimensions = glm::vec2{0.1f};
-    light->billboard = lightBillboard;
-    light->transform.translation = {0.0f, -1.0f, 1.0f};
-    gameObjects.push_back(light);
+    auto light1 = std::make_shared<rkrai::GameObject>();
+    light1->billboard = std::make_shared<rkrai::BillboardComponent>();
+    light1->billboard->color = glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
+    light1->billboard->dimensions = glm::vec2{0.1f};
+    light1->pointLight = std::make_shared<rkrai::PointLightComponent>();
+    light1->pointLight->color = glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
+    light1->transform.translation = {0.0f, -1.0f, 1.0f};
+    gameObjects.push_back(light1);
+
+    auto light2 = std::make_shared<rkrai::GameObject>();
+    light2->billboard = std::make_shared<rkrai::BillboardComponent>();
+    light2->billboard->color = glm::vec4{0.0f, 1.0f, 0.0f, 1.0f};
+    light2->billboard->dimensions = glm::vec2{0.1f};
+    light2->pointLight = std::make_shared<rkrai::PointLightComponent>();
+    light2->pointLight->color = glm::vec4{0.0f, 1.0f, 0.0f, 1.0f};
+    light2->transform.translation = {0.0f, -1.0f, 4.0f};
+    gameObjects.push_back(light2);
 }
