@@ -4,12 +4,10 @@
 #include <vulkan/vulkan.hpp>
 
 namespace rkrai {
-class Renderer;
-
 class RenderSystem {
     private:
     virtual void render(vk::CommandBuffer commandBuffer, int currentFrameIndex) = 0;
 
-    friend Renderer;
+    friend class Renderer;
 };
 }

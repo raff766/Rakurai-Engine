@@ -4,6 +4,8 @@
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_handles.hpp>
+#include <cstdint>
 
 namespace rkrai {
 class GraphicsBuffer {
@@ -16,6 +18,7 @@ class GraphicsBuffer {
 
     void copyFrom(const GraphicsBuffer& srcBuffer);
     void mapData(const void* data);
+    void copyToImage(vk::Image image, uint32_t width, uint32_t height);
 
     vk::DeviceSize getSize() { return size; }
     vk::Buffer getBuffer() { return *buffer; }

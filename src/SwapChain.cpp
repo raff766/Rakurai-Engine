@@ -1,7 +1,11 @@
 #include "SwapChain.h"
+#include "GraphicsImage.h"
+#include "GraphicsImageView.h"
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_structs.hpp>
+#include <vulkan/vulkan_enums.hpp>
 #include <GLFW/glfw3.h>
 
 namespace rkrai {
@@ -117,38 +121,17 @@ void SwapChain::createImageViews() {
 
 void SwapChain::createDepthResources() {
     swapChainDepthFormat = findDepthFormat();
-    depthImages.resize(getImageCount());
-    depthImageMemories.resize(getImageCount());
-    depthImageViews.resize(getImageCount());
 
-    for (int i = 0; i < depthImages.size(); i++) {
-        vk::ImageCreateInfo depthImageInfo{};
-        depthImageInfo.imageType = vk::ImageType::e2D;
-        depthImageInfo.extent.width = swapChainExtent.width;
-        depthImageInfo.extent.height = swapChainExtent.height;
-        depthImageInfo.extent.depth = 1;
-        depthImageInfo.mipLevels = 1;
-        depthImageInfo.arrayLayers = 1;
-        depthImageInfo.format = swapChainDepthFormat;
-        depthImageInfo.tiling = vk::ImageTiling::eOptimal;
-        depthImageInfo.initialLayout = vk::ImageLayout::eUndefined;
-        depthImageInfo.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
-        depthImageInfo.samples = vk::SampleCountFlagBits::e1;
-        depthImageInfo.sharingMode = vk::SharingMode::eExclusive;
+    for (int i = 0; i < getImageCount(); i++) {
+        depthImages.emplace_back(
+            graphicsDevice,
+            vk::ImageType::e2D,
+            vk::Extent3D{swapChainExtent.width, swapChainExtent.height, 1},
+            swapChainDepthFormat,
+            vk::ImageUsageFlagBits::eDepthStencilAttachment
+        );
 
-        depthImages[i] = graphicsDevice.getDevice().createImageUnique(depthImageInfo);
-        auto memRequirements = graphicsDevice.getDevice().getImageMemoryRequirements(*depthImages[i]);
-
-        depthImageMemories[i] = graphicsDevice.getDevice().allocateMemoryUnique({
-            memRequirements.size,
-            graphicsDevice.findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal)
-        });
-        graphicsDevice.getDevice().bindImageMemory(*depthImages[i], *depthImageMemories[i], 0);
-
-        depthImageViews[i] = graphicsDevice.getDevice().createImageViewUnique({
-            {}, *depthImages[i], vk::ImageViewType::e2D, swapChainDepthFormat, {},
-            {vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1}
-        });
+        depthImageViews.emplace_back(depthImages[i], vk::ImageAspectFlagBits::eDepth);
     }
 }
 
@@ -199,7 +182,7 @@ void SwapChain::createFramebuffers() {
     swapChainFramebuffers.resize(swapChainImageViews.size());
 
     for (int i = 0; i < swapChainImageViews.size(); i++) {
-        std::array<vk::ImageView, 2> attachments{ *swapChainImageViews[i], *depthImageViews[i] };
+        std::array<vk::ImageView, 2> attachments{ *swapChainImageViews[i], depthImageViews[i].getImageView() };
         swapChainFramebuffers[i] = graphicsDevice.getDevice().createFramebufferUnique({
             {}, *renderPass, attachments, swapChainExtent.width, swapChainExtent.height, 1
         });

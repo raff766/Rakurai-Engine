@@ -30,5 +30,6 @@ foreach(file ${SHADER_FILES})
     add_custom_target(${fileName}.spv ALL DEPENDS ${outputFile})
 endforeach()
 
-# Create symbolic link for models
+# Create symbolic links
 execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/models ${OUTPUT_DIR}/models)
+execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/textures ${OUTPUT_DIR}/textures)

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "GraphicsDevice.h"
+#include "GraphicsImage.h"
+#include "GraphicsImageView.h"
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>
@@ -46,9 +48,8 @@ class SwapChain {
 
     vk::UniqueRenderPass renderPass;
 
-    std::vector<vk::UniqueImage> depthImages;
-    std::vector<vk::UniqueDeviceMemory> depthImageMemories;
-    std::vector<vk::UniqueImageView> depthImageViews;
+    std::vector<GraphicsImage> depthImages;
+    std::vector<GraphicsImageView> depthImageViews;
 
     //Synchronization objects
     std::vector<vk::UniqueSemaphore> imageAvailableSemaphores;

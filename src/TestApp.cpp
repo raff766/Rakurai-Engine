@@ -1,6 +1,7 @@
 #include "TestApp.h"
 #include "Camera.h"
 #include "GameObject.h"
+#include "GraphicsImage.h"
 #include "Model.h"
 #include "MovementController.h"
 #include "GraphicsBuffer.h"
@@ -14,6 +15,7 @@
 #include <chrono>
 #include <memory>
 #include <vector>
+#include <vulkan/vulkan_enums.hpp>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
