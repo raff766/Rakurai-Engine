@@ -1,7 +1,6 @@
 #include "TestApp.h"
 #include "Camera.h"
 #include "GameObject.h"
-#include "GraphicsImage.h"
 #include "Model.h"
 #include "MovementController.h"
 #include "GraphicsBuffer.h"

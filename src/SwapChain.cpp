@@ -1,6 +1,6 @@
 #include "SwapChain.h"
-#include "GraphicsImage.h"
-#include "GraphicsImageView.h"
+#include "Image.h"
+#include "ImageView.h"
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>

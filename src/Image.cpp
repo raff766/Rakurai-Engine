@@ -1,4 +1,4 @@
-#include "GraphicsImage.h"
+#include "Image.h"
 #include "GraphicsBuffer.h"
 #include "GraphicsCommands.h"
 #include "GraphicsDevice.h"
@@ -12,21 +12,21 @@
 #include <vulkan/vulkan_handles.hpp>
 
 namespace rkrai {
-GraphicsImage::GraphicsImage(
+Image::Image(
     GraphicsDevice& device, vk::ImageType imageType, vk::Extent3D imageExtent, vk::Format imageFormat, vk::ImageUsageFlags imageUsage) 
     : graphicsDevice(device), imageType(imageType), imageExtent(imageExtent), imageFormat(imageFormat), imageUsage(imageUsage) {
     createImage();
     allocateImageMemory();
 }
 
-GraphicsImage::GraphicsImage(
+Image::Image(
     GraphicsDevice& device, std::string imageFilePath)
     : graphicsDevice(device), imageType(vk::ImageType::e2D), imageFormat(vk::Format::eR8G8B8A8Srgb),
     imageUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled) {
     loadTextureFile(imageFilePath);
 }
 
-void GraphicsImage::loadTextureFile(std::string path) {
+void Image::loadTextureFile(std::string path) {
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     vk::DeviceSize imageSize = texWidth * texHeight * (sizeof(stbi_uc) * 4);
@@ -54,7 +54,7 @@ void GraphicsImage::loadTextureFile(std::string path) {
     transitionImageLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 }
 
-void GraphicsImage::createImage() {
+void Image::createImage() {
     vk::ImageCreateInfo imageInfo{
         {}, imageType, imageFormat, imageExtent, 1, 1,
         vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal, imageUsage, vk::SharingMode::eExclusive
@@ -63,7 +63,7 @@ void GraphicsImage::createImage() {
     image = graphicsDevice.getDevice().createImageUnique(imageInfo);
 }
 
-void GraphicsImage::allocateImageMemory() {
+void Image::allocateImageMemory() {
     vk::MemoryRequirements memRequiremnts = graphicsDevice.getDevice().getImageMemoryRequirements(*image);
     uint32_t memType = graphicsDevice.findMemoryType(memRequiremnts.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
@@ -72,7 +72,7 @@ void GraphicsImage::allocateImageMemory() {
     graphicsDevice.getDevice().bindImageMemory(*image, *imageMemory, 0);
 }
 
-void GraphicsImage::transitionImageLayout(vk::ImageLayout oldLayout, vk::ImageLayout newLayout) {
+void Image::transitionImageLayout(vk::ImageLayout oldLayout, vk::ImageLayout newLayout) {
     vk::ImageMemoryBarrier barrier{
         vk::AccessFlagBits::eNone, vk::AccessFlagBits::eNone,
         oldLayout, newLayout, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, *image,

@@ -7,23 +7,23 @@
 #include <vulkan/vulkan_handles.hpp>
 
 namespace rkrai {
-class GraphicsImage {
+class Image {
     public:
-    GraphicsImage(
+    Image(
         GraphicsDevice& device,
         vk::ImageType imageType,
         vk::Extent3D imageExtent,
         vk::Format imageFormat,
         vk::ImageUsageFlags imageUsage
     );
-    GraphicsImage(
+    Image(
         GraphicsDevice& device,
         std::string imageFilePath
     );
-    GraphicsImage(const GraphicsImage&) = delete;
-    void operator=(const GraphicsImage&) = delete;
-    GraphicsImage(GraphicsImage&&) = default;
-    GraphicsImage& operator=(GraphicsImage&&) = delete;
+    Image(const Image&) = delete;
+    void operator=(const Image&) = delete;
+    Image(Image&&) = default;
+    Image& operator=(Image&&) = delete;
 
     void loadTextureFile(std::string path);
 
@@ -44,6 +44,6 @@ class GraphicsImage {
     void allocateImageMemory();
     void transitionImageLayout(vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
 
-    friend class GraphicsImageView;
+    friend class ImageView;
 };
 }
