@@ -2,6 +2,7 @@
 
 #include "GraphicsDevice.h"
 
+#include <cstddef>
 #include <string>
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_handles.hpp>
@@ -16,16 +17,12 @@ class Image {
         vk::Format imageFormat,
         vk::ImageUsageFlags imageUsage
     );
-    Image(
-        GraphicsDevice& device,
-        std::string imageFilePath
-    );
     Image(const Image&) = delete;
     void operator=(const Image&) = delete;
     Image(Image&&) = default;
     Image& operator=(Image&&) = delete;
 
-    void loadTextureFile(std::string path);
+    void loadData(std::byte* data, vk::DeviceSize size);
 
     vk::Image getImage() { return *image; }
 

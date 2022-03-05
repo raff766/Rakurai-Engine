@@ -3,10 +3,7 @@
 #include "GraphicsCommands.h"
 #include "GraphicsDevice.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-#include <cstdint>
-#include <stdexcept>
+#include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_structs.hpp>
 #include <vulkan/vulkan_handles.hpp>
@@ -19,35 +16,14 @@ Image::Image(
     allocateImageMemory();
 }
 
-Image::Image(
-    GraphicsDevice& device, std::string imageFilePath)
-    : graphicsDevice(device), imageType(vk::ImageType::e2D), imageFormat(vk::Format::eR8G8B8A8Srgb),
-    imageUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled) {
-    loadTextureFile(imageFilePath);
-}
-
-void Image::loadTextureFile(std::string path) {
-    int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-    vk::DeviceSize imageSize = texWidth * texHeight * (sizeof(stbi_uc) * 4);
-
-    if (!pixels) {
-        throw std::runtime_error("Failed to load texture file!");
-    }
-
-    imageExtent = vk::Extent3D{static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1};
-    createImage();
-    allocateImageMemory();
-
+void Image::loadData(std::byte* data, vk::DeviceSize size) {
     GraphicsBuffer stagingBuffer{
         graphicsDevice,
-        imageSize,
+        size,
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
     };
-    stagingBuffer.mapData(pixels);
-
-    stbi_image_free(pixels);
+    stagingBuffer.mapData(data);
 
     transitionImageLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
     stagingBuffer.copyToImage(*image, imageExtent.width, imageExtent.height);

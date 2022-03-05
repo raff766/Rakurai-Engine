@@ -129,9 +129,8 @@ int GraphicsDevice::rateDeviceSuitability(vk::PhysicalDevice device) {
     QueueFamilyIndices queueFamilyIndices = findQueueFamilyIndices(device);
 
     int score = 0;
-    if (!deviceFeatures.geometryShader) return 0;
-    if (!queueFamilyIndices.isComplete()) return 0;
-    if (!hasRequiredDeviceExtensions(device)) return 0;
+    if (!deviceFeatures.geometryShader || !deviceFeatures.samplerAnisotropy
+    || !queueFamilyIndices.isComplete() || !hasRequiredDeviceExtensions(device)) return 0;
 
     SwapChainSupportDetails swapChainSupport = getSwapChainSupportDetails(device);
     if (swapChainSupport.surfaceFormats.empty() || swapChainSupport.presentModes.empty()) return 0;
@@ -186,6 +185,7 @@ void GraphicsDevice::createLogicalDevice() {
     }
 
     vk::PhysicalDeviceFeatures deviceFeatures{};
+    deviceFeatures.setSamplerAnisotropy(VK_TRUE);
     vk::DeviceCreateInfo deviceCreateInfo{};
     deviceCreateInfo.setQueueCreateInfos(queueInfos);
     deviceCreateInfo.setPEnabledFeatures(&deviceFeatures);

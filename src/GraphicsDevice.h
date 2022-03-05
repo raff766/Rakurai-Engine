@@ -41,6 +41,7 @@ class GraphicsDevice {
     vk::CommandPool getCommandPool() { return *commandPool; }
     vk::Queue getGraphicsQueue() { return graphicsQueue; }
     vk::Queue getPresentQueue() { return presentQueue; }
+    vk::PhysicalDeviceProperties getDeviceProperties() { return physicalDevice.getProperties(); }
 
     private:
     const std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};

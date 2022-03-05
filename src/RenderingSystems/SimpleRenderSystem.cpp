@@ -3,12 +3,12 @@
 #include "GraphicsPipeline.h"
 #include "Model.h"
 #include "SwapChain.h"
-#include <glm/fwd.hpp>
-#include <vulkan/vulkan_enums.hpp>
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_enums.hpp>
 #include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 #include <glm/gtc/constants.hpp>
 #include <optional>
 
