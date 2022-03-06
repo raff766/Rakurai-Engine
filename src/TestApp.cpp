@@ -5,7 +5,7 @@
 #include "MovementController.h"
 #include "GraphicsBuffer.h"
 #include "RenderingSystems/BillboardRenderSystem.h"
-#include "RenderingSystems/SimpleRenderSystem.h"
+#include "RenderingSystems/DefaultRenderSystem.h"
 #include "Renderer.h"
 #include "SwapChain.h"
 

@@ -1,4 +1,4 @@
-#include "SimpleRenderSystem.h"
+#include "DefaultRenderSystem.h"
 #include "GraphicsPipeline.h"
 #include "Model.h"
 #include "SwapChain.h"

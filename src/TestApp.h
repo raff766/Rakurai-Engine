@@ -1,6 +1,5 @@
 #pragma once
 
-#include "RenderingSystems/SimpleRenderSystem.h"
 #include "Window.h"
 #include "GraphicsDevice.h"
 #include "SwapChain.h"
