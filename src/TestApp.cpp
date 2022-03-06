@@ -25,7 +25,7 @@ TestApp::TestApp() {
 
 void TestApp::run() {
     auto camera = std::make_shared<rkrai::Camera>();
-    auto simpleRenderSystem = std::make_shared<rkrai::SimpleRenderSystem>(graphicsDevice, renderer.getSwapChainRenderPass(), camera);
+    auto simpleRenderSystem = std::make_shared<rkrai::DefaultRenderSystem>(graphicsDevice, renderer.getSwapChainRenderPass(), camera);
     auto billboardRenderSystem = std::make_shared<rkrai::BillboardRenderSystem>(graphicsDevice, renderer.getSwapChainRenderPass(), camera);
     rkrai::GameObject cameraObject{};
     rkrai::MovementController cameraController{};

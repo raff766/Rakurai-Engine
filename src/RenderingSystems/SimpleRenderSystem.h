@@ -14,11 +14,11 @@
 #include <vector>
 
 namespace rkrai {
-class SimpleRenderSystem : public RenderSystem {
+class DefaultRenderSystem : public RenderSystem {
 public:
-    SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::shared_ptr<const Camera> camera);
-    SimpleRenderSystem(const SimpleRenderSystem&) = delete;
-    void operator=(const SimpleRenderSystem&) = delete;
+    DefaultRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::shared_ptr<const Camera> camera);
+    DefaultRenderSystem(const DefaultRenderSystem&) = delete;
+    void operator=(const DefaultRenderSystem&) = delete;
 
     void addGameObject(std::shared_ptr<const GameObject> gameObject) { gameObjects.push_back(gameObject); }
     void removeGameObject();

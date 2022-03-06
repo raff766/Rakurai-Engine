@@ -36,7 +36,7 @@ struct SimpleUbo {
     int numLights;
 };
 
-SimpleRenderSystem::SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::shared_ptr<const Camera> camera)
+DefaultRenderSystem::DefaultRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::shared_ptr<const Camera> camera)
     : graphicsDevice(device), renderPass(renderPass), camera(camera) {
     createUboBuffers();
     createResourceBinder();
@@ -44,7 +44,7 @@ SimpleRenderSystem::SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass re
     createPipeline();
 }
 
-void SimpleRenderSystem::createUboBuffers() {
+void DefaultRenderSystem::createUboBuffers() {
     for (int i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
         uboBuffers.emplace_back(
             graphicsDevice,
@@ -55,7 +55,7 @@ void SimpleRenderSystem::createUboBuffers() {
     }
 }
 
-void SimpleRenderSystem::createResourceBinder() {
+void DefaultRenderSystem::createResourceBinder() {
     for (int i = 0; i < uboBuffers.size(); i++) {
         resourceBinder.emplace_back(graphicsDevice);
         resourceBinder[i].add(&uboBuffers[i], 0, vk::DescriptorType::eUniformBuffer);
@@ -63,7 +63,7 @@ void SimpleRenderSystem::createResourceBinder() {
     }
 }
 
-void SimpleRenderSystem::createPipelineLayout() {
+void DefaultRenderSystem::createPipelineLayout() {
     vk::PushConstantRange pushConstantRange{
         vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
         0,
@@ -73,7 +73,7 @@ void SimpleRenderSystem::createPipelineLayout() {
     pipelineLayout = graphicsDevice.getDevice().createPipelineLayoutUnique({{}, descriptorSetLayout, pushConstantRange});
 }
 
-void SimpleRenderSystem::createPipeline() {
+void DefaultRenderSystem::createPipeline() {
     PipelineConfigInfo pipelineConfig = GraphicsPipeline::getDefaultPipelineConfigInfo();
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = *pipelineLayout;
@@ -87,7 +87,7 @@ void SimpleRenderSystem::createPipeline() {
     );
 }
 
-void SimpleRenderSystem::render(vk::CommandBuffer commandBuffer, int currentFrameIndex) {
+void DefaultRenderSystem::render(vk::CommandBuffer commandBuffer, int currentFrameIndex) {
     SimpleUbo simpleUbo{};
     simpleUbo.projMat = camera->getProjection();
     simpleUbo.viewMat = camera->getView();
