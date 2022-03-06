@@ -4,8 +4,8 @@
 #include "GraphicsDevice.h"
 #include "GraphicsPipeline.h"
 #include "GameObject.h"
-#include "Descriptors.h"
 #include "RenderSystem.h"
+#include "ResourceBinder.h"
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>
@@ -27,7 +27,7 @@ public:
 
 private:
     void createUboBuffers();
-    void createUboDescriptors();
+    void createResourceBinder();
     void createPipelineLayout();
     void createPipeline();
     void render(vk::CommandBuffer commandBuffer, int currentFrameIndex);
@@ -39,7 +39,7 @@ private:
     std::shared_ptr<const Camera> camera;
     
     std::vector<GraphicsBuffer> uboBuffers;
-    std::optional<Descriptors> uboDescriptors;
+    std::vector<ResourceBinder> resourceBinder;
     vk::UniquePipelineLayout pipelineLayout;
     std::optional<GraphicsPipeline> graphicsPipeline;
 };

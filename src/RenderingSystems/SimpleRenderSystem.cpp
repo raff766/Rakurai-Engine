@@ -1,5 +1,4 @@
 #include "SimpleRenderSystem.h"
-#include "Descriptors.h"
 #include "GraphicsPipeline.h"
 #include "Model.h"
 #include "SwapChain.h"
@@ -40,7 +39,7 @@ struct SimpleUbo {
 SimpleRenderSystem::SimpleRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::shared_ptr<const Camera> camera)
     : graphicsDevice(device), renderPass(renderPass), camera(camera) {
     createUboBuffers();
-    createUboDescriptors();
+    createResourceBinder();
     createPipelineLayout();
     createPipeline();
 }
@@ -56,17 +55,11 @@ void SimpleRenderSystem::createUboBuffers() {
     }
 }
 
-void SimpleRenderSystem::createUboDescriptors() {
-    uboDescriptors.emplace(
-        graphicsDevice,
-        vk::DescriptorType::eUniformBuffer,
-        vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-        uboBuffers.size(),
-        1,
-        0
-    );
+void SimpleRenderSystem::createResourceBinder() {
     for (int i = 0; i < uboBuffers.size(); i++) {
-        uboDescriptors->populateDescriptorSet(i, uboBuffers[i]);
+        resourceBinder.emplace_back(graphicsDevice);
+        resourceBinder[i].add(&uboBuffers[i], 0, vk::DescriptorType::eUniformBuffer);
+        resourceBinder[i].finalize();
     }
 }
 
@@ -76,7 +69,7 @@ void SimpleRenderSystem::createPipelineLayout() {
         0,
         sizeof(SimplePushConstantData)
     };
-    vk::DescriptorSetLayout descriptorSetLayout = uboDescriptors->getSetLayout();
+    vk::DescriptorSetLayout descriptorSetLayout = resourceBinder[0].getSetLayout();
     pipelineLayout = graphicsDevice.getDevice().createPipelineLayoutUnique({{}, descriptorSetLayout, pushConstantRange});
 }
 
@@ -112,13 +105,7 @@ void SimpleRenderSystem::render(vk::CommandBuffer commandBuffer, int currentFram
     uboBuffers[currentFrameIndex].mapData(&simpleUbo);
 
     graphicsPipeline->bind(commandBuffer);
-    commandBuffer.bindDescriptorSets(
-        vk::PipelineBindPoint::eGraphics,
-        *pipelineLayout,
-        0,
-        uboDescriptors->getDescriptorSets()[currentFrameIndex],
-        {}
-    );
+    resourceBinder[currentFrameIndex].bind(commandBuffer, *pipelineLayout);
 
     for (const auto& gameObj : gameObjects) {
         if (gameObj->model == nullptr) continue;

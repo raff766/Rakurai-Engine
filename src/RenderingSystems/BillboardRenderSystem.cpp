@@ -1,5 +1,4 @@
 #include "BillboardRenderSystem.h"
-#include "Descriptors.h"
 #include "GraphicsPipeline.h"
 #include "SwapChain.h"
 #include <vulkan/vulkan_enums.hpp>
@@ -28,7 +27,7 @@ struct BillboardUbo {
 BillboardRenderSystem::BillboardRenderSystem(GraphicsDevice& device, vk::RenderPass renderPass, std::shared_ptr<const Camera> camera)
     : graphicsDevice(device), renderPass(renderPass), camera(camera) {
     createUboBuffers();
-    createUboDescriptors();
+    createResourceBinder();
     createPipelineLayout();
     createPipeline();
 }
@@ -44,17 +43,11 @@ void BillboardRenderSystem::createUboBuffers() {
     }
 }
 
-void BillboardRenderSystem::createUboDescriptors() {
-    uboDescriptors.emplace(
-        graphicsDevice,
-        vk::DescriptorType::eUniformBuffer,
-        vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-        uboBuffers.size(),
-        1,
-        0
-    );
+void BillboardRenderSystem::createResourceBinder() {
     for (int i = 0; i < uboBuffers.size(); i++) {
-        uboDescriptors->populateDescriptorSet(i, uboBuffers[i]);
+        resourceBinder.emplace_back(graphicsDevice);
+        resourceBinder[i].add(&uboBuffers[i], 0, vk::DescriptorType::eUniformBuffer);
+        resourceBinder[i].finalize();
     }
 }
 
@@ -64,7 +57,7 @@ void BillboardRenderSystem::createPipelineLayout() {
         0,
         sizeof(BillboardPushConstantData)
     };
-    vk::DescriptorSetLayout descriptorSetLayout = uboDescriptors->getSetLayout();
+    vk::DescriptorSetLayout descriptorSetLayout = resourceBinder[0].getSetLayout();
     pipelineLayout = graphicsDevice.getDevice().createPipelineLayoutUnique({{}, descriptorSetLayout, pushConstantRange});
 }
 
@@ -87,13 +80,7 @@ void BillboardRenderSystem::render(vk::CommandBuffer commandBuffer, int currentF
     uboBuffers[currentFrameIndex].mapData(&billboardUbo);
 
     graphicsPipeline->bind(commandBuffer);
-    commandBuffer.bindDescriptorSets(
-        vk::PipelineBindPoint::eGraphics,
-        *pipelineLayout,
-        0,
-        uboDescriptors->getDescriptorSets()[currentFrameIndex],
-        {}
-    );
+    resourceBinder[currentFrameIndex].bind(commandBuffer, *pipelineLayout);
 
     for (const auto& gameObject : gameObjects) {
         BillboardPushConstantData push{};
