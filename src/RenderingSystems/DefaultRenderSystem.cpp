@@ -1,7 +1,10 @@
 #include "DefaultRenderSystem.h"
 #include "GraphicsPipeline.h"
 #include "Model.h"
+#include "ResourceBinder.h"
 #include "SwapChain.h"
+#include <vector>
+#include <vulkan/vulkan_handles.hpp>
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>
@@ -57,10 +60,16 @@ void DefaultRenderSystem::createUboBuffers() {
 
 void DefaultRenderSystem::createResourceBinder() {
     for (int i = 0; i < uboBuffers.size(); i++) {
-        resourceBinder.emplace_back(graphicsDevice);
-        resourceBinder[i].add(&uboBuffers[i], 0, vk::DescriptorType::eUniformBuffer);
-        resourceBinder[i].finalize();
+        resourceBinder.emplace_back(
+            graphicsDevice,
+            std::vector<ResourceBinder::Binding>{ {0, vk::DescriptorType::eUniformBuffer, 1} }
+        );
+        resourceBinder[i].setBuffer(0, &uboBuffers[i]);
     }
+    perObjectBinder.emplace(
+        graphicsDevice,
+        std::vector<ResourceBinder::Binding>{ {1, vk::DescriptorType::eCombinedImageSampler, 1} }
+    );
 }
 
 void DefaultRenderSystem::createPipelineLayout() {
@@ -69,8 +78,10 @@ void DefaultRenderSystem::createPipelineLayout() {
         0,
         sizeof(SimplePushConstantData)
     };
-    vk::DescriptorSetLayout descriptorSetLayout = resourceBinder[0].getSetLayout();
-    pipelineLayout = graphicsDevice.getDevice().createPipelineLayoutUnique({{}, descriptorSetLayout, pushConstantRange});
+    std::vector<vk::DescriptorSetLayout> descriptorSetLayouts;
+    descriptorSetLayouts.push_back(resourceBinder[0].getSetLayout());
+    descriptorSetLayouts.push_back(perObjectBinder->getSetLayout());
+    pipelineLayout = graphicsDevice.getDevice().createPipelineLayoutUnique({{}, descriptorSetLayouts, pushConstantRange});
 }
 
 void DefaultRenderSystem::createPipeline() {
@@ -88,15 +99,17 @@ void DefaultRenderSystem::createPipeline() {
 }
 
 void DefaultRenderSystem::render(vk::CommandBuffer commandBuffer, int currentFrameIndex) {
-    SimpleUbo simpleUbo{};
-    simpleUbo.projMat = camera->getProjection();
-    simpleUbo.viewMat = camera->getView();
+    SimpleUbo simpleUbo{
+        .projMat = camera->getProjection(),
+        .viewMat = camera->getView()
+    };
 
     for (const auto& gameObj : gameObjects) {
         if (gameObj->pointLight != nullptr) {
-            PointLight pointLight{};
-            pointLight.position = glm::vec4{gameObj->transform.translation, 1.0f};
-            pointLight.color = gameObj->pointLight->color;
+            PointLight pointLight{
+                .position = glm::vec4{gameObj->transform.translation, 1.0f},
+                .color = gameObj->pointLight->color
+            };
             simpleUbo.pointLights[simpleUbo.numLights] = pointLight;
             simpleUbo.numLights++;
         }
@@ -105,7 +118,7 @@ void DefaultRenderSystem::render(vk::CommandBuffer commandBuffer, int currentFra
     uboBuffers[currentFrameIndex].mapData(&simpleUbo);
 
     graphicsPipeline->bind(commandBuffer);
-    resourceBinder[currentFrameIndex].bind(commandBuffer, *pipelineLayout);
+    resourceBinder[currentFrameIndex].bind(commandBuffer, *pipelineLayout, 0);
 
     for (const auto& gameObj : gameObjects) {
         if (gameObj->model == nullptr) continue;
@@ -117,6 +130,9 @@ void DefaultRenderSystem::render(vk::CommandBuffer commandBuffer, int currentFra
             *pipelineLayout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
             0, sizeof(SimplePushConstantData), &push
         );
+
+        perObjectBinder->setTexture(1, gameObj->texture.get());
+        perObjectBinder->bind(commandBuffer, *pipelineLayout, 1);
 
         gameObj->model->bind(commandBuffer);
         gameObj->model->draw(commandBuffer);

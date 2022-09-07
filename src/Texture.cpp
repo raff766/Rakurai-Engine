@@ -16,10 +16,17 @@
 namespace rkrai {
 Texture::Texture(GraphicsDevice& graphicsDevice, std::string imageFilePath) : graphicsDevice(graphicsDevice) {
     auto[data, size, extent] = loadTextureFile(imageFilePath);
-    image.emplace(graphicsDevice, vk::ImageType::e2D, extent, vk::Format::eR8G8B8A8Srgb, vk::ImageUsageFlagBits::eTransferDst);
+    image.emplace(
+        graphicsDevice,
+        vk::ImageType::e2D,
+        extent,
+        vk::Format::eR8G8B8A8Srgb,
+        vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled
+    );
     imageView.emplace(*image, vk::ImageAspectFlagBits::eColor);
     image->loadData(data, size);
     stbi_image_free(data);
+    createSampler();
 }
 
 std::tuple<std::byte*, vk::DeviceSize, vk::Extent3D> Texture::loadTextureFile(std::string path) {
@@ -36,7 +43,7 @@ std::tuple<std::byte*, vk::DeviceSize, vk::Extent3D> Texture::loadTextureFile(st
 }
 
 void Texture::createSampler() {
-    graphicsDevice.getDevice().createSamplerUnique(vk::SamplerCreateInfo{
+    sampler = graphicsDevice.getDevice().createSamplerUnique(vk::SamplerCreateInfo{
         {}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear,
         vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat,
         0.0f, VK_TRUE, graphicsDevice.getDeviceProperties().limits.maxSamplerAnisotropy,

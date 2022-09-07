@@ -8,6 +8,7 @@
 #include "RenderingSystems/DefaultRenderSystem.h"
 #include "Renderer.h"
 #include "SwapChain.h"
+#include "Texture.h"
 
 #include <glm/fwd.hpp>
 #include <glm/glm.hpp>
@@ -25,14 +26,14 @@ TestApp::TestApp() {
 
 void TestApp::run() {
     auto camera = std::make_shared<rkrai::Camera>();
-    auto simpleRenderSystem = std::make_shared<rkrai::DefaultRenderSystem>(graphicsDevice, renderer.getSwapChainRenderPass(), camera);
+    auto defaultRenderSystem = std::make_shared<rkrai::DefaultRenderSystem>(graphicsDevice, renderer.getSwapChainRenderPass(), camera);
     auto billboardRenderSystem = std::make_shared<rkrai::BillboardRenderSystem>(graphicsDevice, renderer.getSwapChainRenderPass(), camera);
     rkrai::GameObject cameraObject{};
     rkrai::MovementController cameraController{};
     
     for (const auto& gameObj : gameObjects) {
         if (gameObj->model != nullptr || gameObj->pointLight != nullptr) {
-            simpleRenderSystem->addGameObject(gameObj);
+            defaultRenderSystem->addGameObject(gameObj);
         }
         if (gameObj->billboard != nullptr) {
             billboardRenderSystem->addGameObject(gameObj);
@@ -40,7 +41,7 @@ void TestApp::run() {
     }
 
     auto currentTime = std::chrono::high_resolution_clock::now();
-    renderer.addRenderSystem(simpleRenderSystem);
+    renderer.addRenderSystem(defaultRenderSystem);
     renderer.addRenderSystem(billboardRenderSystem);
     while(!window.shouldClose()) {
         glfwPollEvents();
@@ -60,19 +61,15 @@ void TestApp::run() {
 }
 
 void TestApp::loadGameObjects() {
-    auto model = std::make_shared<rkrai::Model>(graphicsDevice, "models/smooth_vase.obj");
+    auto model = std::make_shared<rkrai::Model>(graphicsDevice, "models/viking_room.obj");
+    auto texture = std::make_shared<rkrai::Texture>(graphicsDevice, "textures/viking_room.png");
     auto gameObj = std::make_shared<rkrai::GameObject>();
     gameObj->model = model;
+    gameObj->texture = texture;
     gameObj->transform.translation = {0.0f, 0.0f, 2.5f};
     gameObj->transform.scale = {1.0f, 1.0f, 1.0f};
+    gameObj->transform.rotation = {glm::radians(90.0f), 0.0f, 0.0f};
     gameObjects.push_back(gameObj);
-
-    auto floorModel = std::make_shared<rkrai::Model>(graphicsDevice, "models/quad.obj");
-    auto floor = std::make_shared<rkrai::GameObject>();
-    floor->model = floorModel;
-    floor->transform.translation = {0.0f, 0.0f, 2.5f};
-    floor->transform.scale = {3.0f, 1.0f, 3.0f};
-    gameObjects.push_back(floor);
 
     auto light1 = std::make_shared<rkrai::GameObject>();
     light1->billboard = std::make_shared<rkrai::BillboardComponent>();

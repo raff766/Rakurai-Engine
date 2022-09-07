@@ -3,6 +3,7 @@
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec3 fragWorldPos;
 layout(location = 2) in vec3 fragNormalWorld;
+layout(location = 3) in vec2 fragUv;
 
 layout (location = 0) out vec4 outColor;
 
@@ -16,13 +17,15 @@ struct PointLight {
     vec4 color;
 };
 
-layout(binding = 0) uniform UniformBufferObject {
+layout(set = 0, binding = 0) uniform UniformBufferObject {
     mat4 projMat;
     mat4 viewMat;
     vec4 ambientLightColor;
     PointLight pointLights[10];
     int numLights;
 } ubo;
+
+layout(set = 1, binding = 1) uniform sampler2D texSampler;
 
 void main() {
     vec3 diffuseLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
@@ -33,5 +36,5 @@ void main() {
         vec3 lightColor = ubo.pointLights[i].color.xyz * ubo.pointLights[i].color.w;
         diffuseLight += attenuation * lightColor * max(dot(normalWorld, normalize(directionToLight)), 0);
     }
-    outColor = vec4(diffuseLight * fragColor, 1.0);
+    outColor = texture(texSampler, fragUv);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Model.h"
+#include "Texture.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
@@ -32,6 +33,7 @@ class GameObject {
     glm::vec3 color{};
 
     std::shared_ptr<Model> model;
+    std::shared_ptr<Texture> texture;
     std::shared_ptr<BillboardComponent> billboard;
     std::shared_ptr<PointLightComponent> pointLight;
 

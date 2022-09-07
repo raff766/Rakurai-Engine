@@ -40,6 +40,7 @@ private:
     
     std::vector<GraphicsBuffer> uboBuffers;
     std::vector<ResourceBinder> resourceBinder;
+    std::optional<ResourceBinder> perObjectBinder;
     vk::UniquePipelineLayout pipelineLayout;
     std::optional<GraphicsPipeline> graphicsPipeline;
 };

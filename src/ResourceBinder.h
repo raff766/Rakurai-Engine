@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphicsBuffer.h"
+#include "Texture.h"
 
 #include <cstdint>
 #include <unordered_map>
@@ -13,22 +14,28 @@
 namespace rkrai {
 class ResourceBinder {
     public:
-    ResourceBinder(GraphicsDevice& graphicsDevice) : graphicsDevice(graphicsDevice) {}
+    struct Binding {
+        uint32_t index;
+        vk::DescriptorType descriptorType;
+        uint32_t descriptorCount;
+    };
+
+    ResourceBinder(GraphicsDevice& graphicsDevice, std::vector<Binding> bindings);
     ResourceBinder(const ResourceBinder&) = delete;
     void operator=(const ResourceBinder&) = delete;
     ResourceBinder(ResourceBinder&&) = default;
     ResourceBinder& operator=(ResourceBinder&&) = delete;
 
-    void add(GraphicsBuffer* graphicsBuffer, uint32_t binding, vk::DescriptorType descriptorType);
-    void finalize();
-    void bind(vk::CommandBuffer commandBuffer, vk::PipelineLayout pipelineLayout);
+    void setBuffer(uint32_t index, GraphicsBuffer* graphicsBuffer);
+    void setTexture(uint32_t index, Texture* texture);
+    void bind(vk::CommandBuffer commandBuffer, vk::PipelineLayout pipelineLayout, uint32_t setNum);
 
     vk::DescriptorSetLayout getSetLayout() { return *descriptorSetLayout; }
 
     private:
     GraphicsDevice& graphicsDevice;
 
-    std::unordered_multimap<vk::DescriptorType, std::pair<GraphicsBuffer*, uint32_t>> graphicsBuffers;
+    std::vector<Binding> bindings;
 
     vk::UniqueDescriptorPool descriptorPool;
     vk::UniqueDescriptorSetLayout descriptorSetLayout;
@@ -37,6 +44,5 @@ class ResourceBinder {
     void createDescriptorPool();
     void createDescriptorSetLayout();
     void allocateDescriptorSet();
-    void populateDescriptorSet();
 };
 }

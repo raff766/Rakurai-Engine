@@ -155,7 +155,7 @@ void Model::Data::loadModel(const std::string& filepath) {
             if (vertexIndices.texcoord_index >= 0) {
                 vertex.uv = {
                     attrib.texcoords[2 * vertexIndices.texcoord_index + 0],
-                    attrib.texcoords[2 * vertexIndices.texcoord_index + 1],
+                    1.0f - attrib.texcoords[2 * vertexIndices.texcoord_index + 1]
                 };
             }
 

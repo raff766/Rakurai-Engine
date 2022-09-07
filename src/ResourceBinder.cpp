@@ -1,7 +1,10 @@
 #include "ResourceBinder.h"
 #include "GraphicsBuffer.h"
+#include "GraphicsDevice.h"
 
 #include <cstdint>
+#include <optional>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 #include <vulkan/vulkan.hpp>
@@ -9,57 +12,64 @@
 #include <vulkan/vulkan_structs.hpp>
 
 namespace rkrai {
-void ResourceBinder::add(GraphicsBuffer* graphicsBuffer, uint32_t binding, vk::DescriptorType descriptorType) {
-    graphicsBuffers.insert(std::make_pair(descriptorType, std::make_pair(graphicsBuffer, binding)));
-}
-
-void ResourceBinder::finalize() {
+ResourceBinder::ResourceBinder(GraphicsDevice& graphicsDevice, std::vector<Binding> bindings) 
+: graphicsDevice(graphicsDevice), bindings(std::move(bindings)) {
     createDescriptorPool();
     createDescriptorSetLayout();
     allocateDescriptorSet();
-    populateDescriptorSet();
 }
 
-void ResourceBinder::bind(vk::CommandBuffer commandBuffer, vk::PipelineLayout pipelineLayout) {
-    commandBuffer.bindDescriptorSets(
-        vk::PipelineBindPoint::eGraphics,
-        pipelineLayout,
-        0,
-        descriptorSet,
-        {}
+void ResourceBinder::setBuffer(uint32_t index, GraphicsBuffer* graphicsBuffer) {
+    std::optional<vk::DescriptorType> descriptorType;
+    for (const auto& binding : bindings) {
+        if (binding.index == index) {
+            descriptorType = binding.descriptorType;
+        }
+    }
+    if (!descriptorType) throw std::runtime_error("This binding index does not exist!");
+
+    vk::DescriptorBufferInfo bufferInfo{graphicsBuffer->getBuffer(), 0, VK_WHOLE_SIZE};
+    graphicsDevice.getDevice().updateDescriptorSets(
+        vk::WriteDescriptorSet{descriptorSet, index, 0, *descriptorType, {}, bufferInfo}, {}
     );
+}
+
+void ResourceBinder::setTexture(uint32_t index, Texture* texture) {
+    std::optional<vk::DescriptorType> descriptorType;
+    for (const auto& binding : bindings) {
+        if (binding.index == index) {
+            descriptorType = binding.descriptorType;
+        }
+    }
+    if (!descriptorType) throw std::runtime_error("This binding index does not exist!");
+
+    vk::DescriptorImageInfo imageInfo{texture->getSampler(), texture->getImageView(), vk::ImageLayout::eShaderReadOnlyOptimal};
+    graphicsDevice.getDevice().updateDescriptorSets(
+        vk::WriteDescriptorSet{descriptorSet, index, 0, *descriptorType, imageInfo}, {}
+    );
+}
+
+void ResourceBinder::bind(vk::CommandBuffer commandBuffer, vk::PipelineLayout pipelineLayout, uint32_t setNum) {
+    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, setNum, descriptorSet, {});
 }
 
 void ResourceBinder::createDescriptorPool() {
     std::vector<vk::DescriptorPoolSize> poolSizes;
-    //Loop through every unique key, aka DescriptorType, within graphicsBuffers
-    for (auto it = graphicsBuffers.begin(); it != graphicsBuffers.end(); it = graphicsBuffers.equal_range(it->first).second) {
-        vk::DescriptorType descriptorType = it->first;
-        poolSizes.emplace_back(descriptorType, static_cast<uint32_t>(graphicsBuffers.count(descriptorType)));
+    for (const Binding& binding : bindings) {
+        poolSizes.emplace_back(binding.descriptorType, binding.descriptorCount);
     }
     descriptorPool = graphicsDevice.getDevice().createDescriptorPoolUnique({{}, 1, poolSizes});
 }
 
 void ResourceBinder::createDescriptorSetLayout() {
     std::vector<vk::DescriptorSetLayoutBinding> setBindings;
-    for (auto it = graphicsBuffers.begin(); it != graphicsBuffers.end(); it = graphicsBuffers.equal_range(it->first).second) {
-        vk::DescriptorType descriptorType = it->first;
-        uint32_t descriptorCount = static_cast<uint32_t>(graphicsBuffers.count(descriptorType));
-        setBindings.emplace_back(it->second.second, descriptorType, descriptorCount, vk::ShaderStageFlagBits::eAll);
+    for (const Binding& binding : bindings) {
+        setBindings.emplace_back(binding.index, binding.descriptorType, binding.descriptorCount, vk::ShaderStageFlagBits::eAll);
     }
     descriptorSetLayout = graphicsDevice.getDevice().createDescriptorSetLayoutUnique({{}, setBindings});
 }
 
 void ResourceBinder::allocateDescriptorSet() {
     descriptorSet = graphicsDevice.getDevice().allocateDescriptorSets({*descriptorPool, *descriptorSetLayout})[0];
-}
-
-void ResourceBinder::populateDescriptorSet() {
-    for (const auto&[descriptorType, bufferAndBinding] : graphicsBuffers) {
-        vk::DescriptorBufferInfo bufferInfo{bufferAndBinding.first->getBuffer(), 0, VK_WHOLE_SIZE};
-        graphicsDevice.getDevice().updateDescriptorSets(
-            vk::WriteDescriptorSet{descriptorSet, bufferAndBinding.second, 0, descriptorType, {}, bufferInfo}, {}
-        );
-    }
 }
 }

@@ -16,6 +16,9 @@ class Texture {
     public:
     Texture(GraphicsDevice& graphicsDevice, std::string imageFilePath);
 
+    vk::ImageView getImageView() { return imageView->getImageView(); }
+    vk::Sampler getSampler() { return *sampler; }
+
     private:
     GraphicsDevice& graphicsDevice;
 

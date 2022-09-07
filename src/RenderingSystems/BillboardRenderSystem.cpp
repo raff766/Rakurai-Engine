@@ -1,6 +1,8 @@
 #include "BillboardRenderSystem.h"
 #include "GraphicsPipeline.h"
+#include "ResourceBinder.h"
 #include "SwapChain.h"
+#include <vector>
 #include <vulkan/vulkan_enums.hpp>
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
@@ -45,9 +47,11 @@ void BillboardRenderSystem::createUboBuffers() {
 
 void BillboardRenderSystem::createResourceBinder() {
     for (int i = 0; i < uboBuffers.size(); i++) {
-        resourceBinder.emplace_back(graphicsDevice);
-        resourceBinder[i].add(&uboBuffers[i], 0, vk::DescriptorType::eUniformBuffer);
-        resourceBinder[i].finalize();
+        resourceBinder.emplace_back(
+            graphicsDevice,
+            std::vector<ResourceBinder::Binding>{ {0, vk::DescriptorType::eUniformBuffer, 1} }
+        );
+        resourceBinder[i].setBuffer(0, &uboBuffers[i]);
     }
 }
 
@@ -74,19 +78,21 @@ void BillboardRenderSystem::createPipeline() {
 }
 
 void BillboardRenderSystem::render(vk::CommandBuffer commandBuffer, int currentFrameIndex) {
-    BillboardUbo billboardUbo{};
-    billboardUbo.projMat = camera->getProjection();
-    billboardUbo.viewMat = camera->getView();
+    BillboardUbo billboardUbo{
+        .projMat = camera->getProjection(),
+        .viewMat = camera->getView()
+    };
     uboBuffers[currentFrameIndex].mapData(&billboardUbo);
 
     graphicsPipeline->bind(commandBuffer);
-    resourceBinder[currentFrameIndex].bind(commandBuffer, *pipelineLayout);
+    resourceBinder[currentFrameIndex].bind(commandBuffer, *pipelineLayout, 0);
 
     for (const auto& gameObject : gameObjects) {
-        BillboardPushConstantData push{};
-        push.billboardColor = gameObject->billboard->color;
-        push.billboardDimensions = gameObject->billboard->dimensions;
-        push.billboardPosition = gameObject->transform.translation;
+        BillboardPushConstantData push{
+            .billboardColor = gameObject->billboard->color,
+            .billboardDimensions = gameObject->billboard->dimensions,
+            .billboardPosition = gameObject->transform.translation
+        };
 
         commandBuffer.pushConstants(
             *pipelineLayout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,

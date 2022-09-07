@@ -8,6 +8,7 @@ layout(location = 3) in vec2 uv;
 layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec3 fragWorldPos;
 layout(location = 2) out vec3 fragNormalWorld;
+layout(location = 3) out vec2 fragUv;
 
 layout(push_constant) uniform Push {
     mat4 modelMat;
@@ -19,13 +20,15 @@ struct PointLight {
     vec4 color;
 };
 
-layout(binding = 0) uniform UniformBufferObject {
+layout(set = 0, binding = 0) uniform UniformBufferObject {
     mat4 projMat;
     mat4 viewMat;
     vec4 ambientLightColor;
     PointLight pointLights[10];
     int numLights;
 } ubo;
+
+layout(set = 1, binding = 1) uniform sampler2D texSampler;
 
 void main() {
     vec4 vertexWorldPos = push.modelMat * vec4(position, 1.0);
@@ -36,4 +39,5 @@ void main() {
     fragColor = color;
     fragWorldPos = vertexWorldPos.xyz;
     fragNormalWorld = normalWorld;
+    fragUv = uv;
 }
