@@ -75,7 +75,7 @@ void Renderer::beginSwapChainRenderPass() {
     vk::RenderPassBeginInfo renderPassInfo{};
     renderPassInfo.renderPass = swapChain->getRenderPass();
     renderPassInfo.framebuffer = swapChain->getFrameBuffer(currentImageIndex);
-    renderPassInfo.renderArea = {{0, 0}, swapChainExtent};
+    renderPassInfo.renderArea = vk::Rect2D{{0, 0}, swapChainExtent};
     
     std::array<vk::ClearValue, 2> clearValues{};
     clearValues[0].color = vk::ClearColorValue{std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f}};
